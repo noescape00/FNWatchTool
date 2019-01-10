@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using WatchTool.Common.P2P;
+﻿using WatchTool.Common.P2P;
 
 namespace WatchTool.Client.P2P
 {

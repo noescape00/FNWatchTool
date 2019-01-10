@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WatchTool.Common.P2P
+﻿namespace WatchTool.Common.P2P
 {
     // sends messages to attached connection and handles messages for it
     public abstract class PeerBase
