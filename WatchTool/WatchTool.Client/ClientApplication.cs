@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using WatchTool.Client.P2P;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Client
 {
@@ -20,6 +21,7 @@ namespace WatchTool.Client
             {
                 this.services = this.GetServicesCollection().BuildServiceProvider();
 
+                this.services.GetRequiredService<PayloadProvider>().DiscoverPayloads();
                 this.services.GetRequiredService<ConnectionManager>().Initialize();
             }
             catch (Exception exception)
@@ -36,7 +38,8 @@ namespace WatchTool.Client
             this.logger.Trace("()");
 
             IServiceCollection collection = new ServiceCollection()
-                .AddSingleton<ConnectionManager>();
+                .AddSingleton<ConnectionManager>()
+                .AddSingleton<PayloadProvider>();
 
             this.logger.Trace("(-)");
             return collection;

@@ -50,7 +50,6 @@ namespace WatchTool.Common.P2P.PayloadsBase
             }
 
             foreach (var pair in types
-                .Where(t => t.Namespace == typeof(PayloadAttribute).Namespace)
                 .Where(t => t.IsDefined(typeof(PayloadAttribute), true))
                 .Select(t =>
                     new
@@ -64,19 +63,6 @@ namespace WatchTool.Common.P2P.PayloadsBase
             }
 
             return this;
-        }
-
-        /// <summary>
-        /// Add a payload to the Provider by specifying its type.
-        /// </summary>
-        /// <param name="type">The type to payload to add.  Must derive from <see cref="Payload"/>.</param>
-        public void AddPayload(Type payloadType)
-        {
-            PayloadAttribute payloadAttribute = payloadType.GetCustomAttributes(typeof(PayloadAttribute), true)
-                .OfType<PayloadAttribute>().First();
-
-            this.nameToType.Add(payloadAttribute.Name, payloadType);
-            this.typeToName.Add(payloadType, payloadAttribute.Name);
         }
 
         /// <summary>

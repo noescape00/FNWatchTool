@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchTool.Client", "WatchTo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchTool.Server", "WatchTool.Server\WatchTool.Server.csproj", "{72E19E48-CC9F-415C-B4B0-AD7417230A66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WatchTool.Common", "WatchTool.Common\WatchTool.Common.csproj", "{E417A87E-1BF2-4E7E-B171-BE063DA3A662}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchTool.Common", "WatchTool.Common\WatchTool.Common.csproj", "{E417A87E-1BF2-4E7E-B171-BE063DA3A662}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

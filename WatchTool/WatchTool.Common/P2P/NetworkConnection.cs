@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Common.P2P
 {
@@ -13,7 +13,7 @@ namespace WatchTool.Common.P2P
     {
         public static byte[] MagicBytes = { 0x73, 0x35, 0x22, 0x05 };
 
-        public static int CommandNameSizeBytes = 20;
+        public static int CommandNameSizeBytes = 12;
 
         public static int MessageLengthSize = 4;
 
@@ -28,25 +28,27 @@ namespace WatchTool.Common.P2P
 
         private readonly Task receiveMessagesTask;
 
-        //private readonly AsyncQueue<> receivedMessagesQueue;
+        private readonly AsyncQueue<Payload> receivedMessagesQueue;
 
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public NetworkConnection(TcpClient client)
+        private readonly PayloadProvider payloadProvider;
+
+        public NetworkConnection(TcpClient client, PayloadProvider payloadProvider)
         {
             this.client = client;
             this.stream = client.GetStream();
 
-            //this.receivedMessagesQueue = new AsyncQueue<>();
+            this.payloadProvider = payloadProvider;
+
+            this.receivedMessagesQueue = new AsyncQueue<Payload>();
 
             this.cancellation = new CancellationTokenSource();
             this.receiveMessagesTask = this.ReceiveMessagesAsync();
         }
 
-        // TODO methods to send and receive things
-
         // Throws if there was a problem establishing connection
-        public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint,
+        public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint, PayloadProvider payloadProvider,
             CancellationToken cancellationToken)
         {
             var client = new TcpClient(AddressFamily.InterNetworkV6);
@@ -72,53 +74,40 @@ namespace WatchTool.Common.P2P
             if (exception != null)
                 throw exception;
 
-            var connection = new NetworkConnection(client);
+            var connection = new NetworkConnection(client, payloadProvider);
 
             return connection;
         }
 
-        // TODO too low level
-        public async Task SendAsync(byte[] bytes)
+        // throws if message sending failed
+        public async Task SendAsync(Payload payload)
         {
-            // TODO remove
-            string by = "";
-            foreach (var b in bytes)
-            {
-                by += b.ToString() + " ";
-            }
-            this.logger.Info(by);
+            List<byte> bytes = new List<byte>();
+            bytes.AddRange(MagicBytes);
 
+            var commandBytes = Encoders.ASCII.DecodeData(payload.Command.Trim().PadRight(12, '\0'));
+            bytes.AddRange(commandBytes);
+
+            byte[] payloadBytes = JsonSerializer.ToJson(payload);
+
+            uint messageLength = (uint)payloadBytes.Length;
+            bytes.AddRange(BitConverter.GetBytes(messageLength));
+
+            bytes.AddRange(payloadBytes);
+
+            await this.SendBytesAsync(bytes.ToArray());
+        }
+
+        private async Task SendBytesAsync(byte[] bytes)
+        {
             await this.stream.WriteAsync(bytes, 0, bytes.Length, this.cancellation.Token).ConfigureAwait(false);
         }
 
-        public async Task SendTestAsync()
-        {
-            List<byte> bytesToSend = new List<byte>();
-
-            bytesToSend.AddRange(MagicBytes);
-
-            for (int i = 0; i < CommandNameSizeBytes; ++i)
-            {
-                bytesToSend.Add(2);
-            }
-
-            uint length = 100;
-
-            bytesToSend.AddRange(BitConverter.GetBytes(length));
-
-            for (int i = 0; i < length; ++i)
-            {
-                bytesToSend.Add(8);
-            }
-
-            await SendAsync(bytesToSend.ToArray()).ConfigureAwait(false);
-        }
-
         // gives us message or exception. if exception we should close connection immeduiatelly
-        //public Task<> ReceiveIncomingMessageAsync(CancellationToken cancellation = default(CancellationToken))
-        //{
-        //    return this.receivedMessagesQueue.DequeueAsync(cancellation);
-        //}
+        public Task<Payload> ReceiveIncomingMessageAsync(CancellationToken cancellation = default(CancellationToken))
+        {
+            return this.receivedMessagesQueue.DequeueAsync(cancellation);
+        }
 
         /// <summary>Reads messages from the connection stream and pushes them to the queue.</summary>
         private async Task ReceiveMessagesAsync()
@@ -129,17 +118,22 @@ namespace WatchTool.Common.P2P
                 {
                     byte[] rawMessage = await this.ReadMessageAsync().ConfigureAwait(false);
 
-                    this.logger.Info("Message of lenght {0} received!", rawMessage.Length);
+                    this.logger.Debug("Message of length {0} received!", rawMessage.Length);
 
-                    // TODO log incoming bytes
-                    // Rewrite completely
-                    //Message message = this.ReadMessage(rawMessage);
-                    //message.MessageSize = (uint)rawMessage.Length;
-                    //
-                    //this.logger.LogTrace("Received message: '{0}'", message);
-                    //
-                    //var receivedMessage = new IncomingMessage(message, message.MessageSize);
-                    //
+                    byte[] commandBytes = new byte[CommandNameSizeBytes];
+                    Array.Copy(rawMessage, MagicBytes.Length, commandBytes, 0, CommandNameSizeBytes);
+                    string command = Encoders.ASCII.EncodeData(commandBytes);
+
+                    Type payloadType = this.payloadProvider.GetCommandType(command);
+
+                    int offset = MagicBytes.Length + CommandNameSizeBytes + MessageLengthSize;
+                    byte[] payloadBytes = new byte[rawMessage.Length - offset];
+                    Array.Copy(rawMessage, offset, payloadBytes, 0, payloadBytes.Length);
+
+                    Payload payload = JsonSerializer.FromJson(payloadBytes, payloadType) as Payload;
+
+                    this.logger.Info("Payload of type '{0}' received.", payloadType.Name);
+
                     //this.receivedMessagesQueue.Enqueue(receivedMessage);
                 }
             }

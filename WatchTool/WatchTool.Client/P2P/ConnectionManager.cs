@@ -3,24 +3,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.P2P;
+using WatchTool.Common.P2P.Payloads;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Client.P2P
 {
     /// <summary>Maintains connection to server. Tries to restart it if failed.</summary>
     public class ConnectionManager : IDisposable
     {
-        private NetworkConnection activeConnection;
-
-        public ClientPeer Peer { get; private set; }
+        public ClientPeer ActivePeer { get; private set; }
 
         private readonly CancellationTokenSource cancellation;
         private Task connectingTask;
 
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public ConnectionManager()
+        private readonly PayloadProvider payloadProvider;
+
+        public ConnectionManager(PayloadProvider payloadProvider)
         {
-            this.activeConnection = null;
+            this.ActivePeer = null;
+            this.payloadProvider = payloadProvider;
 
             this.cancellation = new CancellationTokenSource();
         }
@@ -35,7 +38,7 @@ namespace WatchTool.Client.P2P
         {
             while (!this.cancellation.IsCancellationRequested)
             {
-                if (this.activeConnection != null)
+                if (this.ActivePeer != null)
                 {
                     await Task.Delay(500, this.cancellation.Token).ConfigureAwait(false);
 
@@ -46,15 +49,21 @@ namespace WatchTool.Client.P2P
                 {
                     this.logger.Info("Connecting to server...");
 
-                    this.activeConnection = await NetworkConnection.EstablishConnection(ClientConfiguration.ServerEndPoint, this.cancellation.Token).ConfigureAwait(false);
-                    this.Peer = new ClientPeer(activeConnection);
+                    NetworkConnection connection = await NetworkConnection.EstablishConnection(ClientConfiguration.ServerEndPoint, this.payloadProvider,
+                        this.cancellation.Token).ConfigureAwait(false);
 
-                    this.logger.Info("Connection established.");
+                    this.ActivePeer = new ClientPeer(connection, peer =>
+                    {
+                        this.logger.Warn("Connection with the server was terminated.");
+                        this.ActivePeer = null;
+                    });
+
+                    this.logger.Info("Connection with the server was established.");
                 }
                 catch (Exception e)
                 {
                     this.logger.Warn("Failed attempt to establish a connection to the server.");
-                    this.logger.Trace("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
+                    this.logger.Debug("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
 
                     await Task.Delay(2000, this.cancellation.Token).ConfigureAwait(false);
                 }

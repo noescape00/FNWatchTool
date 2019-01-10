@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.P2P;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Server.P2P
 {
@@ -19,8 +20,11 @@ namespace WatchTool.Server.P2P
         /// <summary>Task accepting new clients in a loop.</summary>
         private Task acceptTask;
 
-        public ServerListener()
+        private readonly PayloadProvider payloadProvider;
+
+        public ServerListener(PayloadProvider payloadProvider)
         {
+            this.payloadProvider = payloadProvider;
             this.cancellation = new CancellationTokenSource();
 
             this.tcpListener = new TcpListener(ServerConfiguration.ListenEndPoint);
@@ -76,8 +80,11 @@ namespace WatchTool.Server.P2P
                         throw error;
 
                     this.logger.Info("Connection established with {0}.", tcpClient.Client.RemoteEndPoint);
-                    NetworkConnection connection = new NetworkConnection(tcpClient);
-                    ServerPeer peer = new ServerPeer(connection);
+                    NetworkConnection connection = new NetworkConnection(tcpClient, payloadProvider);
+                    ServerPeer peer = new ServerPeer(connection, failedPeer =>
+                    {
+                        // TODO remove from peers manager
+                    });
 
                     //TODO add to peers manager
                 }
