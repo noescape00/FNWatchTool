@@ -7,16 +7,18 @@ using WatchTool.Common.P2P;
 namespace WatchTool.Client.P2P
 {
     /// <summary>Maintains connection to server. Tries to restart it if failed.</summary>
-    public class ServerConnectionManager : IDisposable
+    public class ConnectionManager : IDisposable
     {
         private NetworkConnection activeConnection;
+
+        public ClientPeer Peer { get; private set; }
 
         private readonly CancellationTokenSource cancellation;
         private Task connectingTask;
 
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public ServerConnectionManager()
+        public ConnectionManager()
         {
             this.activeConnection = null;
 
@@ -45,12 +47,14 @@ namespace WatchTool.Client.P2P
                     this.logger.Info("Connecting to server...");
 
                     this.activeConnection = await NetworkConnection.EstablishConnection(ClientConfiguration.ServerEndPoint, this.cancellation.Token).ConfigureAwait(false);
+                    this.Peer = new ClientPeer(activeConnection);
 
                     this.logger.Info("Connection established.");
                 }
                 catch (Exception e)
                 {
-                    this.logger.Warn("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
+                    this.logger.Warn("Failed attempt to establish a connection to the server.");
+                    this.logger.Trace("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
 
                     await Task.Delay(2000, this.cancellation.Token).ConfigureAwait(false);
                 }
@@ -62,7 +66,6 @@ namespace WatchTool.Client.P2P
             this.cancellation.Cancel();
 
             this.connectingTask.GetAwaiter().GetResult();
-
             this.cancellation.Dispose();
         }
     }

@@ -20,7 +20,7 @@ namespace WatchTool.Client
             {
                 this.services = this.GetServicesCollection().BuildServiceProvider();
 
-                this.services.GetRequiredService<ServerConnectionManager>().Initialize();
+                this.services.GetRequiredService<ConnectionManager>().Initialize();
             }
             catch (Exception exception)
             {
@@ -36,7 +36,7 @@ namespace WatchTool.Client
             this.logger.Trace("()");
 
             IServiceCollection collection = new ServiceCollection()
-                .AddSingleton<ServerConnectionManager>();
+                .AddSingleton<ConnectionManager>();
 
             this.logger.Trace("(-)");
             return collection;
@@ -47,7 +47,7 @@ namespace WatchTool.Client
             this.logger.Trace("()");
             this.logger.Info("Application is shutting down...");
 
-            this.services.GetRequiredService<ServerConnectionManager>()?.Dispose();
+            this.services.GetRequiredService<ConnectionManager>()?.Dispose();
 
             this.logger.Info("Shutdown completed.");
             this.logger.Trace("(-)");

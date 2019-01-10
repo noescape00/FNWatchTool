@@ -6,19 +6,28 @@ using System.Threading.Tasks;
 
 namespace WatchTool.Common.P2P
 {
-    public class NetworkConnection
+    public class NetworkConnection : IDisposable
     {
         private readonly TcpClient client;
 
-        private NetworkConnection(TcpClient client)
+        /// <summary>Stream to send and receive messages through established TCP connection.</summary>
+        private readonly NetworkStream stream;
+
+        private readonly CancellationTokenSource cancellation;
+
+        public NetworkConnection(TcpClient client)
         {
             this.client = client;
+            this.stream = client.GetStream();
+
+            this.cancellation = new CancellationTokenSource();
         }
 
-        // TODO send and receive things
+        // TODO methods to send and receive things
 
         // Throws if there was a problem establishing connection
-        public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint, CancellationToken cancellationToken)
+        public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint,
+            CancellationToken cancellationToken)
         {
             var client = new TcpClient(AddressFamily.InterNetworkV6);
             client.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
@@ -46,6 +55,17 @@ namespace WatchTool.Common.P2P
             var connection = new NetworkConnection(client);
 
             return connection;
+        }
+
+        // TODO too low level
+        public async Task SendAsync(byte[] bytes)
+        {
+            await this.stream.WriteAsync(bytes, 0, bytes.Length, this.cancellation.Token).ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            this.cancellation.Cancel();
         }
     }
 }

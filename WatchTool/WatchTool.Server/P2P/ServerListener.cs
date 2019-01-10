@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using WatchTool.Common.P2P;
 
 namespace WatchTool.Server.P2P
 {
@@ -76,8 +77,11 @@ namespace WatchTool.Server.P2P
                     if (error != null)
                         throw error;
 
-                    // Do not await. TODO create connection
-                    //this.CreatePeerAsync(tcpClient);
+                    this.logger.Info("Connection established with {0}.", tcpClient.Client.RemoteEndPoint);
+                    NetworkConnection connection = new NetworkConnection(tcpClient);
+                    ServerPeer peer = new ServerPeer(connection);
+
+                    //TODO add to peers manager
                 }
             }
             catch (OperationCanceledException)
