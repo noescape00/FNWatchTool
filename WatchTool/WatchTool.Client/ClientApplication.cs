@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using WatchTool.Client.P2P;
 
 namespace WatchTool.Client
 {
@@ -20,7 +20,7 @@ namespace WatchTool.Client
             {
                 this.services = this.GetServicesCollection().BuildServiceProvider();
 
-                //this.services.GetRequiredService<SMTH>().Initialize();
+                this.services.GetRequiredService<ServerConnectionManager>().Initialize();
             }
             catch (Exception exception)
             {
@@ -35,8 +35,8 @@ namespace WatchTool.Client
         {
             this.logger.Trace("()");
 
-            IServiceCollection collection = new ServiceCollection();
-                //.AddSingleton<SMTH>();
+            IServiceCollection collection = new ServiceCollection()
+                .AddSingleton<ServerConnectionManager>();
 
             this.logger.Trace("(-)");
             return collection;
@@ -47,7 +47,7 @@ namespace WatchTool.Client
             this.logger.Trace("()");
             this.logger.Info("Application is shutting down...");
 
-            //this.services.GetRequiredService<SMTH>()?.Dispose();
+            this.services.GetRequiredService<ServerConnectionManager>()?.Dispose();
 
             this.logger.Info("Shutdown completed.");
             this.logger.Trace("(-)");
