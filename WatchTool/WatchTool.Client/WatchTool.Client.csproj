@@ -11,9 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <ProjectReference Include="..\WatchTool.Common\WatchTool.Common.csproj" />
   </ItemGroup>
 
 </Project>

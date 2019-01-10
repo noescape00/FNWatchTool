@@ -4,13 +4,13 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WatchTool.Client.P2P
+namespace WatchTool.Common.P2P
 {
-    public class ServerConnection
+    public class NetworkConnection
     {
         private readonly TcpClient client;
 
-        private ServerConnection(TcpClient client)
+        private NetworkConnection(TcpClient client)
         {
             this.client = client;
         }
@@ -18,7 +18,7 @@ namespace WatchTool.Client.P2P
         // TODO send and receive things
 
         // Throws if there was a problem establishing connection
-        public static async Task<ServerConnection> EstablishConnection(IPEndPoint endPoint, CancellationToken cancellationToken)
+        public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             var client = new TcpClient(AddressFamily.InterNetworkV6);
             client.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
@@ -43,7 +43,7 @@ namespace WatchTool.Client.P2P
             if (exception != null)
                 throw exception;
 
-            var connection = new ServerConnection(client);
+            var connection = new NetworkConnection(client);
 
             return connection;
         }

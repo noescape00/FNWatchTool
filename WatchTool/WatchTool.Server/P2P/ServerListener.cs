@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NLog;
+
+namespace WatchTool.Server.P2P
+{
+    public class ServerListener : IDisposable
+    {
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        /// <summary>TCP server listener accepting inbound connections.</summary>
+        private readonly TcpListener tcpListener;
+
+        private readonly CancellationTokenSource cancellation;
+
+        /// <summary>Task accepting new clients in a loop.</summary>
+        private Task acceptTask;
+
+        public ServerListener()
+        {
+            this.cancellation = new CancellationTokenSource();
+
+            this.tcpListener = new TcpListener(ServerConfiguration.ListenEndPoint);
+            this.tcpListener.Server.LingerState = new LingerOption(true, 0);
+            this.tcpListener.Server.NoDelay = true;
+            this.tcpListener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
+
+            this.acceptTask = Task.CompletedTask;
+
+            this.logger.Debug("Server is ready to listen on '{0}'.", ServerConfiguration.ListenEndPoint);
+        }
+
+        /// <summary>Starts listening on the server's endpoint.</summary>
+        public void Initialize()
+        {
+            this.tcpListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            this.tcpListener.Start();
+            this.acceptTask = this.AcceptClientsAsync();
+        }
+
+        /// <summary>
+        /// Implements loop accepting connections from newly connected clients.
+        /// </summary>
+        private async Task AcceptClientsAsync()
+        {
+            this.logger.Debug("Accepting incoming connections.");
+
+            try
+            {
+                while (!this.cancellation.IsCancellationRequested)
+                {
+                    // Used to record any errors occurring in the thread pool task.
+                    Exception error = null;
+
+                    TcpClient tcpClient = await Task.Run(() =>
+                    {
+                        try
+                        {
+                            Task<TcpClient> acceptClientTask = this.tcpListener.AcceptTcpClientAsync();
+                            acceptClientTask.Wait(this.cancellation.Token);
+                            return acceptClientTask.Result;
+                        }
+                        catch (Exception exception)
+                        {
+                            // Record the error.
+                            error = exception;
+                            return null;
+                        }
+                    }).ConfigureAwait(false);
+
+                    // Raise the error.
+                    if (error != null)
+                        throw error;
+
+                    // Do not await. TODO create connection
+                    //this.CreatePeerAsync(tcpClient);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                this.logger.Debug("Shutdown detected, stop accepting connections.");
+            }
+            catch (Exception e)
+            {
+                this.logger.Debug("Exception occurred: {0}", e.ToString());
+            }
+        }
+
+        public void Dispose()
+        {
+            this.cancellation.Cancel();
+
+            this.logger.Debug("Stopping TCP listener.");
+            this.tcpListener.Stop();
+
+            this.logger.Debug("Waiting for accepting task to complete.");
+            this.acceptTask.Wait();
+
+            this.cancellation.Dispose();
+        }
+    }
+}

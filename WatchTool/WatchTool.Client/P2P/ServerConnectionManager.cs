@@ -2,13 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using WatchTool.Common.P2P;
 
 namespace WatchTool.Client.P2P
 {
     /// <summary>Maintains connection to server. Tries to restart it if failed.</summary>
     public class ServerConnectionManager : IDisposable
     {
-        private ServerConnection activeConnection;
+        private NetworkConnection activeConnection;
 
         private readonly CancellationTokenSource cancellation;
         private Task connectingTask;
@@ -43,7 +44,7 @@ namespace WatchTool.Client.P2P
                 {
                     this.logger.Info("Connecting to server...");
 
-                    this.activeConnection = await ServerConnection.EstablishConnection(Configuration.ServerEndPoint, this.cancellation.Token).ConfigureAwait(false);
+                    this.activeConnection = await NetworkConnection.EstablishConnection(ClientConfiguration.ServerEndPoint, this.cancellation.Token).ConfigureAwait(false);
 
                     this.logger.Info("Connection established.");
                 }
