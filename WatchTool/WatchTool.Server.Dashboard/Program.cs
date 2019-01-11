@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace WatchTool.Server.Dashboard
@@ -13,6 +11,13 @@ namespace WatchTool.Server.Dashboard
     {
         public static void Main(string[] args)
         {
+            new WebHostBuilder()
+                .UseKestrel(options => { })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build()
+                .Run();
         }
 
         public static IWebHost CreateWebHost(IEnumerable<ServiceDescriptor> services, IServiceProvider serviceProvider, IWebHostBuilder webHostBuilder)
@@ -54,6 +59,7 @@ namespace WatchTool.Server.Dashboard
                     }
                 })
                 .UseStartup<Startup>()
+                .UseUrls("http://localhost:5000", "http://*:80")
                 //.UseUrls(apiUri.ToString()) // TODO
                 .Build();
 
