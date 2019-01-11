@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using WatchTool.Client.NodeIntegration;
 using WatchTool.Common.P2P;
 using WatchTool.Common.P2P.PayloadsBase;
 
@@ -19,10 +20,13 @@ namespace WatchTool.Client.P2P
 
         private readonly PayloadProvider payloadProvider;
 
-        public ConnectionManager(PayloadProvider payloadProvider)
+        private readonly NodeController nodeController;
+
+        public ConnectionManager(PayloadProvider payloadProvider, NodeController nodeController)
         {
             this.ActivePeer = null;
             this.payloadProvider = payloadProvider;
+            this.nodeController = nodeController;
 
             this.cancellation = new CancellationTokenSource();
         }
@@ -52,7 +56,7 @@ namespace WatchTool.Client.P2P
                         ClientConfiguration.ServerEndPoint, this.payloadProvider,
                         this.cancellation.Token).ConfigureAwait(false);
 
-                    this.ActivePeer = new ClientPeer(connection, peer =>
+                    this.ActivePeer = new ClientPeer(connection, this.nodeController, peer =>
                     {
                         this.logger.Warn("Connection with the server was terminated.");
                         this.ActivePeer = null;

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using WatchTool.Client.NodeIntegration;
 using WatchTool.Client.P2P;
 using WatchTool.Common.P2P.PayloadsBase;
 
@@ -39,7 +40,9 @@ namespace WatchTool.Client
 
             IServiceCollection collection = new ServiceCollection()
                 .AddSingleton<ConnectionManager>()
-                .AddSingleton<PayloadProvider>();
+                .AddSingleton<PayloadProvider>()
+                .AddSingleton<NodeController>()
+                .AddSingleton<GitIntegration>();
 
             this.logger.Trace("(-)");
             return collection;

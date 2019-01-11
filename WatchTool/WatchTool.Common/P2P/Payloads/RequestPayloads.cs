@@ -21,8 +21,8 @@ namespace WatchTool.Common.P2P.Payloads
     }
 
     // request to update to latest master or clone the repo
-    [Payload("update")]
-    public class UpdateRepositoryRequestPayload : Payload
+    [Payload("getlatest")]
+    public class GetLatestNodeRequestPayload : Payload
     {
     }
 }

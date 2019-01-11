@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="microsoft.powershell.commands.diagnostics" Version="6.0.0-rc" />
+    <PackageReference Include="microsoft.powershell.sdk" Version="6.0.0-rc" />
+    <PackageReference Include="microsoft.wsman.management" Version="6.0.0-rc" />
   </ItemGroup>
 
   <ItemGroup>

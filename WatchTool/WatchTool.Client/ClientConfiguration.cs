@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace WatchTool.Client
 {
@@ -8,5 +9,11 @@ namespace WatchTool.Client
         public const int ServerPort = 18989;
 
         public static readonly IPEndPoint ServerEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfiguration.ServerIP), ClientConfiguration.ServerPort);
+
+        /// <summary>Where do we store the repository and other data.</summary>
+        public static readonly string WorkFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\WatchTool_StratisFNRepo";
+
+        /// <summary>Where do we clone FN repository from.</summary>
+        public const string RepoPath = "https://github.com/stratisproject/StratisBitcoinFullNode.git";
     }
 }
