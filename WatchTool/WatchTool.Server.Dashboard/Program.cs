@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace WatchTool.Server.Dashboard
@@ -14,8 +16,19 @@ namespace WatchTool.Server.Dashboard
 
         public static IWebHost CreateWebHost(IEnumerable<ServiceDescriptor> services, IServiceProvider serviceProvider, IWebHostBuilder webHostBuilder)
         {
+            var dir = Directory.GetCurrentDirectory();
+
+
             IWebHost host = webHostBuilder
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    //Action<ListenOptions> configureListener = listenOptions => { listenOptions.UseHttps(certificate); };
+                    //var ipAddresses = Dns.GetHostAddresses(apiSettings.ApiUri.DnsSafeHost);
+                    //foreach (var ipAddress in ipAddresses)
+                    //{
+                    //    options.Listen(ipAddress, apiSettings.ApiPort, configureListener);
+                    //}
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .ConfigureServices(collection =>
@@ -36,9 +49,10 @@ namespace WatchTool.Server.Dashboard
                     }
                 })
                 .UseStartup<Startup>()
+                //.UseUrls(apiUri.ToString()) // TODO
                 .Build();
 
-            host.Run();
+            host.Start();
 
             return host;
         }
