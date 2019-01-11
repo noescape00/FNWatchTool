@@ -1,5 +1,3 @@
-using System;
-
 namespace WatchTool.Server.Dashboard.Models
 {
     public class ErrorViewModel
