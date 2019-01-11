@@ -75,7 +75,7 @@ namespace WatchTool.Client.P2P
 
                     try
                     {
-                        await Task.Delay(10_000, this.cancellation.Token).ConfigureAwait(false);
+                        await Task.Delay(ClientConfiguration.ConnectToServerRetryDelaySeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {

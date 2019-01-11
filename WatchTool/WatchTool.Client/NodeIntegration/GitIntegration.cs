@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Management.Automation;
+using System.Text;
 using System.Threading.Tasks;
 using NLog;
 
@@ -28,8 +30,28 @@ namespace WatchTool.Client.NodeIntegration
             return null;
         }
 
-        public async Task CloneOrUpdateRepositoryAsync()
+        public string GetSolutionPath()
         {
+            if (!this.WorkFolderExists())
+                return null;
+
+            var repoPath = this.GetRepoPath();
+
+            if (repoPath == null)
+                return null;
+
+            foreach (string directory in Directory.EnumerateFiles(repoPath, "*.sln", SearchOption.AllDirectories))
+            {
+                return Path.GetDirectoryName(directory);
+            }
+
+            return null;
+        }
+
+        public async Task UpdateAndBuildRepositoryAsync()
+        {
+            this.logger.Trace("()");
+
             if (!this.WorkFolderExists() || this.GetRepoPath() == null)
             {
                 // Clone
@@ -43,10 +65,9 @@ namespace WatchTool.Client.NodeIntegration
 
                     ps.AddScript($@"git clone {ClientConfiguration.RepoPath}");
 
-                    Collection<PSObject> results = ps.Invoke();
+                    ps.Invoke();
 
-                    if (ps.HadErrors)
-                        this.LogPSErrors(ps);
+                    this.LogPsExecutionResult(ps);
                 }
             }
 
@@ -61,14 +82,59 @@ namespace WatchTool.Client.NodeIntegration
                 ps.AddScript($@"git pull");
 
                 ps.Invoke();
+
+                this.LogPsExecutionResult(ps);
             }
+
+            this.logger.Info("Finished cloning or updating FN repository.");
+
+            // Build
+            string solutionPath = this.GetSolutionPath();
+
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.AddScript($@"cd {solutionPath}");
+
+                ps.AddScript($@"dotnet build");
+                ps.Invoke();
+
+                this.LogPsExecutionResult(ps);
+            }
+
+            this.logger.Info("Build completed.");
+
+            this.logger.Trace("(-)");
         }
 
-        private void LogPSErrors(PowerShell powershell)
+        private void LogPsExecutionResult(PowerShell powershell)
         {
-            foreach (var error in powershell.Streams.Error)
+            StringBuilder builder = new StringBuilder();
+
+            this.LogPsStreamData(powershell.Streams.Debug, "Debug", builder);
+            this.LogPsStreamData(powershell.Streams.Progress, "Progress", builder);
+            this.LogPsStreamData(powershell.Streams.Verbose, "Verbose", builder);
+            this.LogPsStreamData(powershell.Streams.Error, "Error", builder);
+            this.LogPsStreamData(powershell.Streams.Information, "Information", builder);
+            this.LogPsStreamData(powershell.Streams.Warning, "Warning", builder);
+
+            string output = builder.ToString();
+
+            if (string.IsNullOrEmpty(output))
+                return;
+
+            this.logger.Info(output);
+        }
+
+        private void LogPsStreamData<T>(PSDataCollection<T> data, string streamName, StringBuilder builder) where T : class
+        {
+            if (!data.Any())
+                return;
+
+            builder.AppendLine($"PowerShell data from {streamName} stream:");
+
+            foreach (T item in data)
             {
-                this.logger.Warn(error.ToString());
+                builder.AppendLine(item.ToString());
             }
         }
     }

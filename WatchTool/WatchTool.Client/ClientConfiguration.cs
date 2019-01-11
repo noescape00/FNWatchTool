@@ -15,5 +15,7 @@ namespace WatchTool.Client
 
         /// <summary>Where do we clone FN repository from.</summary>
         public const string RepoPath = "https://github.com/stratisproject/StratisBitcoinFullNode.git";
+
+        public const int ConnectToServerRetryDelaySeconds = 5; // TODO change to 20-30
     }
 }
