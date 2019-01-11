@@ -19,13 +19,13 @@ namespace WatchTool.Server
 
             try
             {
-                this.services = this.GetServicesCollection().BuildServiceProvider();
-
-                WatchTool.Server.Dashboard.Program.Main(new string[] {});
-
+                IServiceCollection servicesCollection = this.GetServicesCollection();
+                this.services = servicesCollection.BuildServiceProvider();
 
                 this.services.GetRequiredService<PayloadProvider>().DiscoverPayloads();
                 this.services.GetRequiredService<ServerListener>().Initialize();
+
+                this.services.GetRequiredService<DashboardHost>().Initialized(servicesCollection, this.services);
             }
             catch (Exception exception)
             {
@@ -43,7 +43,8 @@ namespace WatchTool.Server
             IServiceCollection collection = new ServiceCollection()
                 .AddSingleton<ServerListener>()
                 .AddSingleton<PayloadProvider>()
-                .AddSingleton<ServerConnectionManager>();
+                .AddSingleton<ServerConnectionManager>()
+                .AddSingleton<DashboardHost>();
 
             this.logger.Trace("(-)");
             return collection;
