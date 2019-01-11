@@ -6,4 +6,9 @@ namespace WatchTool.Common.P2P.Payloads
     public class PingPayload : Payload
     {
     }
+
+    [Payload("pong")]
+    public class PongPayload : Payload
+    {
+    }
 }

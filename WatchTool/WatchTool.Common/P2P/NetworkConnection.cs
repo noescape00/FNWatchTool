@@ -118,7 +118,7 @@ namespace WatchTool.Common.P2P
                 {
                     byte[] rawMessage = await this.ReadMessageAsync().ConfigureAwait(false);
 
-                    this.logger.Debug("Message of length {0} received!", rawMessage.Length);
+                    this.logger.Trace("Message of length {0} received!", rawMessage.Length);
 
                     byte[] commandBytes = new byte[CommandNameSizeBytes];
                     Array.Copy(rawMessage, MagicBytes.Length, commandBytes, 0, CommandNameSizeBytes);
@@ -132,16 +132,16 @@ namespace WatchTool.Common.P2P
 
                     Payload payload = JsonSerializer.FromJson(payloadBytes, payloadType) as Payload;
 
-                    this.logger.Info("Payload of type '{0}' received.", payloadType.Name);
+                    this.logger.Trace("Payload of type '{0}' received.", payloadType.Name);
 
-                    //this.receivedMessagesQueue.Enqueue(receivedMessage);
+                    this.receivedMessagesQueue.Enqueue(payload);
                 }
             }
             catch (Exception ex)
             {
                 this.logger.Trace("Exception occurred: '{0}'", ex.ToString());
 
-                //this.receivedMessagesQueue.Enqueue(new IncomingMessage(ex));
+                this.receivedMessagesQueue.Enqueue(null);
             }
         }
 
@@ -242,7 +242,7 @@ namespace WatchTool.Common.P2P
             this.client.Close();
 
             this.receiveMessagesTask.GetAwaiter().GetResult();
-            //this.receivedMessagesQueue.Dispose();
+            this.receivedMessagesQueue.Dispose();
 
             this.cancellation.Dispose();
         }

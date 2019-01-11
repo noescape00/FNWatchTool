@@ -38,18 +38,19 @@ namespace WatchTool.Client.P2P
         {
             while (!this.cancellation.IsCancellationRequested)
             {
-                if (this.ActivePeer != null)
-                {
-                    await Task.Delay(500, this.cancellation.Token).ConfigureAwait(false);
-
-                    continue;
-                }
-
                 try
                 {
+                    if (this.ActivePeer != null)
+                    {
+                        await Task.Delay(500, this.cancellation.Token).ConfigureAwait(false);
+
+                        continue;
+                    }
+
                     this.logger.Info("Connecting to server...");
 
-                    NetworkConnection connection = await NetworkConnection.EstablishConnection(ClientConfiguration.ServerEndPoint, this.payloadProvider,
+                    NetworkConnection connection = await NetworkConnection.EstablishConnection(
+                        ClientConfiguration.ServerEndPoint, this.payloadProvider,
                         this.cancellation.Token).ConfigureAwait(false);
 
                     this.ActivePeer = new ClientPeer(connection, peer =>
@@ -60,10 +61,14 @@ namespace WatchTool.Client.P2P
 
                     this.logger.Info("Connection with the server was established.");
                 }
+                catch (OperationCanceledException)
+                {
+                    this.logger.Debug("Operation canceled.");
+                }
                 catch (Exception e)
                 {
                     this.logger.Warn("Failed attempt to establish a connection to the server.");
-                    this.logger.Debug("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
+                    this.logger.Trace("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
 
                     await Task.Delay(2000, this.cancellation.Token).ConfigureAwait(false);
                 }
