@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WatchTool.Common\WatchTool.Common.csproj" />
+    <ProjectReference Include="..\WatchTool.Server.Dashboard\WatchTool.Server.Dashboard.csproj" />
   </ItemGroup>
 
 </Project>

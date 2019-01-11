@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchTool.Server", "WatchTo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WatchTool.Common", "WatchTool.Common\WatchTool.Common.csproj", "{E417A87E-1BF2-4E7E-B171-BE063DA3A662}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WatchTool.Server.Dashboard", "WatchTool.Server.Dashboard\WatchTool.Server.Dashboard.csproj", "{6E3EFF1B-BDDE-46D7-97C2-14278E78A66F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{E417A87E-1BF2-4E7E-B171-BE063DA3A662}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E417A87E-1BF2-4E7E-B171-BE063DA3A662}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E417A87E-1BF2-4E7E-B171-BE063DA3A662}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E3EFF1B-BDDE-46D7-97C2-14278E78A66F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E3EFF1B-BDDE-46D7-97C2-14278E78A66F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E3EFF1B-BDDE-46D7-97C2-14278E78A66F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E3EFF1B-BDDE-46D7-97C2-14278E78A66F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

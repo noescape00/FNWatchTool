@@ -21,6 +21,9 @@ namespace WatchTool.Server
             {
                 this.services = this.GetServicesCollection().BuildServiceProvider();
 
+                WatchTool.Server.Dashboard.Program.Main(new string[] {});
+
+
                 this.services.GetRequiredService<PayloadProvider>().DiscoverPayloads();
                 this.services.GetRequiredService<ServerListener>().Initialize();
             }
