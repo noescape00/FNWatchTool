@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.P2P;
-using WatchTool.Common.P2P.Payloads;
 using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Client.P2P
@@ -68,9 +67,15 @@ namespace WatchTool.Client.P2P
                 catch (Exception e)
                 {
                     this.logger.Warn("Failed attempt to establish a connection to the server.");
-                    this.logger.Trace("Exception while trying to establish a connection to the server: '{0}'", e.ToString());
+                    this.logger.Trace("Exception while trying to establish a connection to the server: '{0}'.", e.ToString());
 
-                    await Task.Delay(2000, this.cancellation.Token).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(10_000, this.cancellation.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
                 }
             }
         }

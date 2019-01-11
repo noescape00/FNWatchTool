@@ -15,7 +15,7 @@ namespace WatchTool.Client
 
         public async Task StartAsync()
         {
-            this.logger.Info("Application starting.");
+            this.logger.Info("===CLIENT application starting===");
 
             try
             {
