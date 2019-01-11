@@ -9,7 +9,7 @@ using WatchTool.Common.P2P.PayloadsBase;
 namespace WatchTool.Client.P2P
 {
     /// <summary>Maintains connection to server. Tries to restart it if failed.</summary>
-    public class ConnectionManager : IDisposable
+    public class ClientConnectionManager : IDisposable
     {
         public ClientPeer ActivePeer { get; private set; }
 
@@ -22,7 +22,7 @@ namespace WatchTool.Client.P2P
 
         private readonly NodeController nodeController;
 
-        public ConnectionManager(PayloadProvider payloadProvider, NodeController nodeController)
+        public ClientConnectionManager(PayloadProvider payloadProvider, NodeController nodeController)
         {
             this.ActivePeer = null;
             this.payloadProvider = payloadProvider;

@@ -47,6 +47,16 @@ namespace WatchTool.Common.P2P
             this.receiveMessagesTask = this.ReceiveMessagesAsync();
         }
 
+        public bool IsConnected()
+        {
+            return this.client.Connected;
+        }
+
+        public EndPoint GetConnectionEndPoint()
+        {
+            return this.client.Client.RemoteEndPoint;
+        }
+
         // Throws if there was a problem establishing connection
         public static async Task<NetworkConnection> EstablishConnection(IPEndPoint endPoint, PayloadProvider payloadProvider,
             CancellationToken cancellationToken)

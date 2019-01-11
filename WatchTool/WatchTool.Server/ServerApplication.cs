@@ -39,7 +39,8 @@ namespace WatchTool.Server
 
             IServiceCollection collection = new ServiceCollection()
                 .AddSingleton<ServerListener>()
-                .AddSingleton<PayloadProvider>();
+                .AddSingleton<PayloadProvider>()
+                .AddSingleton<ServerConnectionManager>();
 
             this.logger.Trace("(-)");
             return collection;
@@ -51,6 +52,7 @@ namespace WatchTool.Server
             this.logger.Info("Application is shutting down...");
 
             this.services.GetRequiredService<ServerListener>()?.Dispose();
+            this.services.GetRequiredService<ServerConnectionManager>()?.Dispose();
 
             this.logger.Info("Shutdown completed.");
             this.logger.Trace("(-)");

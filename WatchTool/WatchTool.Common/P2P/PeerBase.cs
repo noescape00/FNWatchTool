@@ -10,7 +10,7 @@ namespace WatchTool.Common.P2P
     // sends messages to attached connection and handles messages for it
     public abstract class PeerBase : IDisposable
     {
-        private readonly NetworkConnection connection;
+        public NetworkConnection Connection { get; private set; }
 
         private readonly Action<PeerBase> onDisconnectedAndDisposed;
 
@@ -28,7 +28,7 @@ namespace WatchTool.Common.P2P
 
         protected PeerBase(NetworkConnection connection, Action<PeerBase> onDisconnectedAndDisposed)
         {
-            this.connection = connection;
+            this.Connection = connection;
             this.onDisconnectedAndDisposed = onDisconnectedAndDisposed;
 
             this.cancellation = new CancellationTokenSource();
@@ -43,7 +43,7 @@ namespace WatchTool.Common.P2P
         {
             try
             {
-                await this.connection.SendAsync(payload).ConfigureAwait(false);
+                await this.Connection.SendAsync(payload).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -59,7 +59,7 @@ namespace WatchTool.Common.P2P
             {
                 while (!this.cancellation.IsCancellationRequested)
                 {
-                    Payload payload = await this.connection.ReceiveIncomingMessageAsync(this.cancellation.Token).ConfigureAwait(false);
+                    Payload payload = await this.Connection.ReceiveIncomingMessageAsync(this.cancellation.Token).ConfigureAwait(false);
 
                     if (payload == null)
                     {

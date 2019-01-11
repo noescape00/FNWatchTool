@@ -22,9 +22,12 @@ namespace WatchTool.Server.P2P
 
         private readonly PayloadProvider payloadProvider;
 
-        public ServerListener(PayloadProvider payloadProvider)
+        private readonly ServerConnectionManager connectionManager;
+
+        public ServerListener(PayloadProvider payloadProvider, ServerConnectionManager connectionManager)
         {
             this.payloadProvider = payloadProvider;
+            this.connectionManager = connectionManager;
             this.cancellation = new CancellationTokenSource();
 
             this.tcpListener = new TcpListener(ServerConfiguration.ListenEndPoint);
@@ -83,10 +86,10 @@ namespace WatchTool.Server.P2P
                     NetworkConnection connection = new NetworkConnection(tcpClient, payloadProvider);
                     ServerPeer peer = new ServerPeer(connection, failedPeer =>
                     {
-                        // TODO remove from peers manager
+                        this.connectionManager.RemovePeer(failedPeer as ServerPeer);
                     });
 
-                    //TODO add to peers manager
+                    this.connectionManager.AddPeer(peer);
                 }
             }
             catch (OperationCanceledException)

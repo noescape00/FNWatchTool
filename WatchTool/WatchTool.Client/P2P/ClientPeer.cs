@@ -15,9 +15,6 @@ namespace WatchTool.Client.P2P
         public ClientPeer(NetworkConnection connection, NodeController nodeController, Action<PeerBase> onDisconnectedAndDisposed) : base(connection, onDisconnectedAndDisposed)
         {
             this.nodeController = nodeController;
-
-            // TODO TEST ONLY. DELETE
-            Task.Run(async () => { await this.OnPayloadReceivedAsync(new GetLatestNodeRequestPayload()); });
         }
 
         protected override async Task OnPayloadReceivedAsync(Payload payload)
