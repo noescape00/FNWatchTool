@@ -17,5 +17,8 @@ namespace WatchTool.Client
         public const string RepoPath = "https://github.com/stratisproject/StratisBitcoinFullNode.git";
 
         public const int ConnectToServerRetryDelaySeconds = 5; // TODO change to 20-30
+
+        /// <summary>Port on which node's API is running.</summary>
+        public const int ApiPort = 38221;
     }
 }

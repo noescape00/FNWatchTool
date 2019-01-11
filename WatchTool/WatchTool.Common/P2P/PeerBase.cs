@@ -69,7 +69,14 @@ namespace WatchTool.Common.P2P
                         return;
                     }
 
-                    await this.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                    try
+                    {
+                        await this.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                    }
+                    catch (Exception e)
+                    {
+                        this.logger.Error("Callback that was processing payloads produced an exception! {0}", e.ToString());
+                    }
                 }
             }
             catch (OperationCanceledException e)

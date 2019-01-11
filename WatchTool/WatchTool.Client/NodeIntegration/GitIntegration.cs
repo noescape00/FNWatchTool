@@ -1,10 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Management.Automation;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Client.NodeIntegration
 {
@@ -105,6 +107,56 @@ namespace WatchTool.Client.NodeIntegration
 
             this.logger.Trace("(-)");
         }
+
+        public NodeRepositoryVersionInfo GetRepoInfo()
+        {
+            this.logger.Trace("()");
+
+            string repoPath = this.GetRepoPath();
+            var repoInfo = new NodeRepositoryVersionInfo();
+
+            // Latest commit hash
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.AddScript($@"cd {repoPath}");
+
+                ps.AddScript($@"git rev-parse HEAD");
+                Collection<PSObject> result = ps.Invoke();
+
+                string hash = result.First().ToString();
+
+                if (hash.Length != 40)
+                    throw new Exception("Invalid hash format.");
+
+                repoInfo.LatestCommitHash = hash;
+
+                this.LogPsExecutionResult(ps);
+            }
+
+            // Latest commit date
+            using (PowerShell ps = PowerShell.Create())
+            {
+                ps.AddScript($@"cd {repoPath}");
+
+                ps.AddScript($@"git log -1 --date=format:'%Y-%m-%d %H:%M:%S'");
+                Collection<PSObject> result = ps.Invoke();
+
+                string dateString = result[2].ToString();
+
+                dateString = dateString.Replace("Date:   ", "");
+
+
+                DateTime time = DateTime.Parse(dateString);
+
+                repoInfo.LatestCommitDate = time;
+
+                this.LogPsExecutionResult(ps);
+            }
+
+            this.logger.Trace("(-)");
+            return repoInfo;
+        }
+
 
         private void LogPsExecutionResult(PowerShell powershell)
         {

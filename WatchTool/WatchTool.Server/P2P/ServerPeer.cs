@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using WatchTool.Common.P2P;
+using WatchTool.Common.P2P.Payloads;
 using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Server.P2P
@@ -13,11 +14,18 @@ namespace WatchTool.Server.P2P
 
         }
 
-        protected override Task OnPayloadReceivedAsync(Payload payload)
+        protected override async Task OnPayloadReceivedAsync(Payload payload)
         {
-            //TODO
+            switch (payload)
+            {
+                case NodeInfoPayload nodeInfo:
+                    // TODO process
+                    break;
 
-            return base.OnPayloadReceivedAsync(payload);
+                default:
+                    await base.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                    break;
+            }
         }
     }
 }
