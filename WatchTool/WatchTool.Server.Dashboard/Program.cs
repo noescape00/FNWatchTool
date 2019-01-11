@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,11 @@ namespace WatchTool.Server.Dashboard
 
         public static IWebHost CreateWebHost(IEnumerable<ServiceDescriptor> services, IServiceProvider serviceProvider, IWebHostBuilder webHostBuilder)
         {
-            var dir = Directory.GetCurrentDirectory();
+            string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            // TODO hacky hack
+            var root = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(location).FullName).FullName).FullName).FullName;
+            var actualPath = Path.Combine(root, "WatchTool.Server.Dashboard");
 
 
             IWebHost host = webHostBuilder
@@ -29,7 +34,7 @@ namespace WatchTool.Server.Dashboard
                     //    options.Listen(ipAddress, apiSettings.ApiPort, configureListener);
                     //}
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseContentRoot(actualPath)
                 .UseIISIntegration()
                 .ConfigureServices(collection =>
                 {
