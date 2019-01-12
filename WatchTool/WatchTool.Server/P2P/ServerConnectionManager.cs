@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using NLog;
+using WatchTool.Common.Models;
+using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Server.P2P
 {
-    public class ServerConnectionManager : IDisposable
+    public class ServerConnectionManager : IDisposable, IPeersInformationModelProvider
     {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -20,6 +23,36 @@ namespace WatchTool.Server.P2P
         {
             this.locker = new object();
             this.peers = new List<ServerPeer>();
+        }
+
+        // TODO constantly ask peers for their info model and store them here. Remove when peer disconnects
+
+        public PeersInformationModel GetPeersInfo()
+        {
+            // TODO
+
+            var peerInfo = new PeerInfoModel()
+            {
+                EndPoint = new IPEndPoint(1, 1),
+                LatestInfoPayload = new NodeInfoPayload()
+                {
+                    IsNodeCloned = true,
+                    IsNodeRunning = false,
+                    NodeRepoInfo = new NodeRepositoryVersionInfo()
+                    {
+                        LatestCommitDate = DateTime.Now,
+                        LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
+                    }
+                }
+            };
+
+            PeersInformationModel fakeModel = new PeersInformationModel();
+            fakeModel.PeersInfo = new List<PeerInfoModel>()
+            {
+                peerInfo, peerInfo
+            };
+
+            return fakeModel;
         }
 
         public void AddPeer(ServerPeer peer)

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using WatchTool.Common.Models;
 using WatchTool.Common.P2P.PayloadsBase;
 using WatchTool.Server.P2P;
 
@@ -44,6 +45,7 @@ namespace WatchTool.Server
                 .AddSingleton<ServerListener>()
                 .AddSingleton<PayloadProvider>()
                 .AddSingleton<ServerConnectionManager>()
+                .AddSingleton(provider => provider.GetService<ServerConnectionManager>() as IPeersInformationModelProvider)
                 .AddSingleton<DashboardHost>();
 
             this.logger.Trace("(-)");

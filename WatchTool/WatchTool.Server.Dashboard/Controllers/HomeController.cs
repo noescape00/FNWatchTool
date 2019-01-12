@@ -1,14 +1,24 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using WatchTool.Common.Models;
 using WatchTool.Server.Dashboard.Models;
 
 namespace WatchTool.Server.Dashboard.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IPeersInformationModelProvider peersInfoProvider;
+
+        public HomeController(IPeersInformationModelProvider peersInfoProvider)
+        {
+            this.peersInfoProvider = peersInfoProvider;
+        }
+
         public IActionResult Index()
         {
-            return View();
+            PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+
+            return View(infoModel);
         }
 
         public IActionResult About()
