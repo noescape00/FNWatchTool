@@ -2,8 +2,8 @@
 
 namespace WatchTool.Common.P2P.Payloads
 {
-    [Payload("shutdown")]
-    public class ShutDownNodeRequestPayload : Payload
+    [Payload("stop")]
+    public class StopNodeRequestPayload : Payload
     {
     }
 

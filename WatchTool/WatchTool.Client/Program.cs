@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace WatchTool.Client
@@ -9,15 +10,29 @@ namespace WatchTool.Client
 
         private static void Main(string[] args)
         {
+            string argumants = "/C dotnet exec \"C:\\Users\\user\\AppData\\Roaming\\WatchTool_StratisFNRepo\\StratisBitcoinFullNode\\src\\Stratis.StratisD\\bin\\Debug\\netcoreapp2.1\\Stratis.StratisD.dll\"";
+
+            Console.WriteLine("=================================---------------------");
+
+            Process process = new Process();
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = "cmd.exe";
+            startInfo.Arguments = argumants;
+            startInfo.UseShellExecute = true;
+            process.StartInfo = startInfo;
+            process.Start();
+
+
+            Console.ReadKey();
             new Program().MainAsync(args).GetAwaiter().GetResult();
         }
 
         private async Task MainAsync(string[] args)
         {
-            Console.CancelKeyPress += this.ShutdownHandler;
+            Console.CancelKeyPress += ShutdownHandler;
 
-            this.application = new ClientApplication();
-            await this.application.StartAsync();
+            application = new ClientApplication();
+            await application.StartAsync();
 
             await Task.Delay(-1);
         }
@@ -25,7 +40,7 @@ namespace WatchTool.Client
         /// <summary>Shutdown the handler. Executed when user presses CTRL+C on console.</summary>
         private void ShutdownHandler(object sender, ConsoleCancelEventArgs args)
         {
-            this.application.Dispose();
+            application.Dispose();
 
             args.Cancel = true;
             Environment.Exit(0);
