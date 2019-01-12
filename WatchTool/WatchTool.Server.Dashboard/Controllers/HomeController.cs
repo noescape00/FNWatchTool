@@ -18,34 +18,37 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peersInfoProvider = peersInfoProvider;
         }
 
+        //public IActionResult Index()
+        //{
+        //    var peerInfo = new PeerInfoModel()
+        //    {
+        //        EndPoint = new IPEndPoint(15134635, 19879),
+        //        LatestInfoPayload = new NodeInfoPayload()
+        //        {
+        //            IsNodeCloned = true,
+        //            IsNodeRunning = false,
+        //            NodeRepoInfo = new NodeRepositoryVersionInfo()
+        //            {
+        //                LatestCommitDate = new DateTime(2019, 1, 3),
+        //                LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
+        //            }
+        //        }
+        //    };
+        //
+        //    PeersInformationModel fakeModel = new PeersInformationModel();
+        //    fakeModel.PeersInfo = new List<PeerInfoModel>()
+        //    {
+        //        peerInfo, peerInfo
+        //    };
+        //
+        //    return View(fakeModel);
+        //}
+
         public IActionResult Index()
         {
-            //PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+            PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
 
-
-            var peerInfo = new PeerInfoModel()
-            {
-                EndPoint = new IPEndPoint(15134635, 19879),
-                LatestInfoPayload = new NodeInfoPayload()
-                {
-                    IsNodeCloned = true,
-                    IsNodeRunning = false,
-                    NodeRepoInfo = new NodeRepositoryVersionInfo()
-                    {
-                        LatestCommitDate = DateTime.Now,
-                        LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
-                    }
-                }
-            };
-
-            PeersInformationModel fakeModel = new PeersInformationModel();
-            fakeModel.PeersInfo = new List<PeerInfoModel>()
-            {
-                peerInfo, peerInfo
-            };
-
-
-            return View(fakeModel);
+            return View(infoModel);
         }
 
         public IActionResult About()

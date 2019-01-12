@@ -1,75 +1,53 @@
-﻿@model WatchTool.Common.Models.PeersInformationModel
+﻿@using WatchTool.Common.Models
+@using WatchTool.Common.P2P.Payloads
+@model WatchTool.Common.Models.PeersInformationModel
 
 @{
     ViewData["Title"] = "WatchTool Dashboard";
 }
 
-<br/>
-<br/>
-
-<h5>@Model.PeersInfo.Count</h5>
-
-<h5>@Model.PeersInfo.First().EndPoint</h5>
-
+<br />
+<br />
+<br />
 
 <table class="table">
     <thead class="thead-dark">
     <tr>
         <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
+        <th scope="col">EndPoint</th>
+        <th scope="col">Node Version</th>
+        <th scope="col">Is running</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>QWE</td>
-    </tr>
-    <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>QWE</td>
-    </tr>
-    <tr>
-        <th scope="row">3</th>
-        <td>Larry</td>
-        <td>the Bird</td>
-        <td>QWE</td>
-    </tr>
-    </tbody>
-</table>
+    @{
+        for (int i = 0; i < Model.PeersInfo.Count; i++)
+        {
+            int rowNumber = i + 1;
 
-<table class="table">
-    <thead class="thead-light">
-    <tr>
-        <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>QWE</td>
-    </tr>
-    <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>QWE</td>
-    </tr>
-    <tr>
-        <th scope="row">3</th>
-        <td>Larry</td>
-        <td>the Bird</td>
-        <td>QWE</td>
-    </tr>
+            PeerInfoModel peer = Model.PeersInfo[i];
+
+            string nodeVersion = "N/A";
+
+            if (peer.LatestInfoPayload.IsNodeCloned)
+            {
+                NodeRepositoryVersionInfo repoInfo = peer.LatestInfoPayload.NodeRepoInfo;
+
+                string hashShort = repoInfo.LatestCommitHash.Substring(0, 7);
+
+                int daysOld = (int)(DateTime.Now - repoInfo.LatestCommitDate).TotalDays;
+
+                nodeVersion = $"{hashShort} : {repoInfo.LatestCommitDate.ToShortDateString()} ({daysOld} days old)";
+            }
+
+
+            <tr>
+                <th scope="row">@rowNumber</th>
+                <td>@peer.EndPoint</td>
+                <td>@nodeVersion</td>
+                <td>@peer.LatestInfoPayload.IsNodeRunning</td>
+            </tr>
+        }
+    }
     </tbody>
 </table>

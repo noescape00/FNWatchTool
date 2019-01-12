@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WatchTool.Server.Dashboard</title>
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"
-              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
-              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
-    </environment>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
 </head>
 
 <body>
@@ -26,27 +19,20 @@
             </li>
         </ul>
 
-        @{
-            //<span class="navbar-text">
-            //    Navbar text with an inline element
-            //</span>
-        }
+        <span class="navbar-text">
+            WatchTool.Server.Dashboard - v0.01
+        </span>
     </nav>
 
     <div class="container">
-        <br/>
+        <br />
 
         @RenderBody()
-        <hr/>
-        <footer>
-            <p>WatchTool.Server.Dashboard - v0.01</p>
-        </footer>
+
     </div>
 
-    <environment include="Development">
-        <script src="~/lib/jquery/jquery.min.js"></script>
-        <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
-    </environment>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

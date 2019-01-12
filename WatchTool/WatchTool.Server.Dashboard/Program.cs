@@ -28,7 +28,6 @@ namespace WatchTool.Server.Dashboard
             var root = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(location).FullName).FullName).FullName).FullName;
             var actualPath = Path.Combine(root, "WatchTool.Server.Dashboard");
 
-
             IWebHost host = webHostBuilder
                 .UseKestrel(options =>
                 {
