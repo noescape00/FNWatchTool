@@ -43,11 +43,10 @@
             }
 
             string runningInfo = "-";
+            RunningNodeInfo runningInfoModel = peer.LatestInfoPayload.RunningNodeInfo;
 
-            if (peer.LatestInfoPayload.IsNodeRunning)
+            if (runningInfoModel != null)
             {
-                RunningNodeInfo runningInfoModel = peer.LatestInfoPayload.RunningNodeInfo;
-
                 runningInfo = $"height: {runningInfoModel.ConsensusHeight}";
             }
 
@@ -70,19 +69,20 @@
                 </td>
                 <td>@runningInfo</td>
                 <td>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="location.href =
-                        '@Url.Action("Request_Update", "Home", new { peerId = peer.Id})'">Update</button>
+
+                    @if (!stopActionEnabled)
+                    {
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="location.href = '@Url.Action("Request_Update", "Home", new {peerId = peer.Id})'">Update</button>
+                    }
 
                     @if (runActionEnabled)
                     {
-                        <button type="button" class="btn btn-success btn-sm" onclick="location.href =
-                            '@Url.Action("Request_StartNode", "Home", new { peerId = peer.Id})'">Start node</button>
+                        <button type="button" class="btn btn-success btn-sm" onclick="location.href = '@Url.Action("Request_StartNode", "Home", new {peerId = peer.Id})'">Start node</button>
                     }
 
                     @if (stopActionEnabled)
                     {
-                        <button type="button" class="btn btn-danger btn-sm" onclick="location.href =
-                            '@Url.Action("Request_StopNode", "Home", new { peerId = peer.Id})'">Stop node</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="location.href = '@Url.Action("Request_StopNode", "Home", new {peerId = peer.Id})'">Stop node</button>
                     }
                 </td>
             </tr>

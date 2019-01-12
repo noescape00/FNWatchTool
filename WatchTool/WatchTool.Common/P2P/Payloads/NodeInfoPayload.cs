@@ -13,7 +13,7 @@ namespace WatchTool.Common.P2P.Payloads
 
         public bool IsNodeRunning { get; set; }
 
-        /// <summary>Info about node's running state or <c>null</c> if <see cref="IsNodeRunning"/> is <c>false</c>.</summary>
+        /// <summary>Info about node's running state or <c>null</c> if node wasn't initialized yet.</summary>
         public RunningNodeInfo RunningNodeInfo { get; set; }
     }
 

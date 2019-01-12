@@ -17,7 +17,7 @@ namespace WatchTool.Client.NodeIntegration
 
         private Task nodeUpdatingTask;
 
-        private bool NodeWasLaunched = false;
+        private bool NodeLaunched = false;
 
         private Task nodeStatusUpdateTask;
 
@@ -47,7 +47,7 @@ namespace WatchTool.Client.NodeIntegration
                 return;
             }
 
-            if (this.NodeWasLaunched)
+            if (this.NodeLaunched)
             {
                 this.logger.Trace("(-)[NODE_IS_RUNNING]");
                 return;
@@ -71,9 +71,7 @@ namespace WatchTool.Client.NodeIntegration
 
             info.NodeRepoInfo = git.GetRepoInfo();
 
-            info.IsNodeRunning = this.NodeWasLaunched;
-
-            int consensusHeight = -1;
+            info.IsNodeRunning = this.NodeLaunched;
 
             // Parse consensus height
             if (lastConsoleOutput != null)
@@ -81,16 +79,21 @@ namespace WatchTool.Client.NodeIntegration
                 string data = lastConsoleOutput;
 
                 string key = "Consensus.Height:    ";
-                string consensusHeightString = data.Substring(data.IndexOf(key) + key.Length);
-                consensusHeightString = consensusHeightString.Substring(0, consensusHeightString.IndexOf("   Consensus.Hash"));
-                consensusHeight = int.Parse(consensusHeightString);
-            }
+                int keyIndex = data.IndexOf(key);
 
-            info.RunningNodeInfo = new RunningNodeInfo()
-            {
-                LastConsoleOutput = lastConsoleOutput,
-                ConsensusHeight = consensusHeight
-            };
+                if (keyIndex != -1)
+                {
+                    string consensusHeightString = data.Substring(keyIndex + key.Length);
+                    consensusHeightString = consensusHeightString.Substring(0, consensusHeightString.IndexOf("   Consensus.Hash"));
+                    int consensusHeight = int.Parse(consensusHeightString);
+
+                    info.RunningNodeInfo = new RunningNodeInfo()
+                    {
+                        LastConsoleOutput = lastConsoleOutput,
+                        ConsensusHeight = consensusHeight
+                    };
+                }
+            }
 
             this.logger.Trace("(-)");
             return info;
@@ -100,13 +103,13 @@ namespace WatchTool.Client.NodeIntegration
         {
             this.logger.Trace("()");
 
-            if (this.NodeWasLaunched)
+            if (this.NodeLaunched)
             {
                 this.logger.Trace("(-)[ALREADY_LAUNCHED]");
                 return;
             }
 
-            this.NodeWasLaunched = true;
+            this.NodeLaunched = true;
 
             this.logger.Info("Running the node.");
 
@@ -142,11 +145,14 @@ namespace WatchTool.Client.NodeIntegration
         {
             this.logger.Trace("()");
 
-            if (!this.NodeWasLaunched)
+            if (!this.NodeLaunched)
             {
                 this.logger.Trace("(-)[NOT_LAUNCHED]");
                 return;
             }
+
+            this.NodeLaunched = false;
+            this.lastConsoleOutput = null;
 
             this.logger.Info("Stopping the node.");
 
