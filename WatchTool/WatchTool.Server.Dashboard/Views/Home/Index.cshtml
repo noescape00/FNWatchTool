@@ -51,14 +51,39 @@
                 runningInfo = $"height: {runningInfoModel.ConsensusHeight}";
             }
 
+            bool runActionEnabled = !peer.LatestInfoPayload.IsNodeRunning && peer.LatestInfoPayload.IsNodeCloned;
+            bool stopActionEnabled = peer.LatestInfoPayload.IsNodeRunning;
+
             <tr>
                 <th scope="row">@rowNumber</th>
                 <td>@peer.EndPoint</td>
                 <td>@nodeVersion</td>
-                <td>@peer.LatestInfoPayload.IsNodeRunning</td>
+                <td>
+                    @if (peer.LatestInfoPayload.IsNodeRunning)
+                    {
+                        <span class="badge badge-pill badge-success">Y</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-danger">N</span>
+                    }
+                </td>
                 <td>@runningInfo</td>
                 <td>
-                    ACTIONS
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="location.href =
+                        '@Url.Action("Request_Update", "Home", new { peerId = peer.Id})'">Update</button>
+
+                    @if (runActionEnabled)
+                    {
+                        <button type="button" class="btn btn-success btn-sm" onclick="location.href =
+                            '@Url.Action("Request_StartNode", "Home", new { peerId = peer.Id})'">Start node</button>
+                    }
+
+                    @if (stopActionEnabled)
+                    {
+                        <button type="button" class="btn btn-danger btn-sm" onclick="location.href =
+                            '@Url.Action("Request_StopNode", "Home", new { peerId = peer.Id})'">Stop node</button>
+                    }
                 </td>
             </tr>
         }

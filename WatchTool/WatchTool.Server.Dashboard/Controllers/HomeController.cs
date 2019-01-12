@@ -11,56 +11,97 @@ namespace WatchTool.Server.Dashboard.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IPeersController peersInfoProvider;
+        private readonly IPeersController peersController;
 
-        public HomeController(IPeersController peersInfoProvider = null) // TODO not null
+        public HomeController(IPeersController peersController = null) // TODO not null
         {
-            this.peersInfoProvider = peersInfoProvider;
-        }
-
-        public IActionResult Index()
-        {
-            var peerInfo = new PeerInfoModel()
-            {
-                Id = 12,
-                EndPoint = new IPEndPoint(15134635, 19879),
-                LatestInfoPayload = new NodeInfoPayload()
-                {
-                    IsNodeCloned = true,
-                    IsNodeRunning = true,
-                    NodeRepoInfo = new NodeRepositoryVersionInfo()
-                    {
-                        LatestCommitDate = new DateTime(2019, 1, 3),
-                        LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
-                    },
-                    RunningNodeInfo = new RunningNodeInfo()
-                    {
-                        ConsensusHeight = 784_587
-                    }
-                }
-            };
-
-            PeersInformationModel fakeModel = new PeersInformationModel();
-            fakeModel.PeersInfo = new List<PeerInfoModel>()
-            {
-                peerInfo, peerInfo
-            };
-
-            return View(fakeModel);
+            this.peersController = peersController;
         }
 
         //public IActionResult Index()
         //{
-        //    PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+        //    var peerInfo1 = new PeerInfoModel()
+        //    {
+        //        Id = 3,
+        //        EndPoint = new IPEndPoint(15134635, 19879),
+        //        LatestInfoPayload = new NodeInfoPayload()
+        //        {
+        //            IsNodeCloned = false,
+        //            IsNodeRunning = false,
+        //        }
+        //    };
         //
-        //    return View(infoModel);
+        //    var peerInfo2 = new PeerInfoModel()
+        //    {
+        //        Id = 4,
+        //        EndPoint = new IPEndPoint(15134635, 19879),
+        //        LatestInfoPayload = new NodeInfoPayload()
+        //        {
+        //            IsNodeCloned = true,
+        //            IsNodeRunning = true,
+        //            NodeRepoInfo = new NodeRepositoryVersionInfo()
+        //            {
+        //                LatestCommitDate = new DateTime(2019, 1, 3),
+        //                LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
+        //            },
+        //            RunningNodeInfo = new RunningNodeInfo()
+        //            {
+        //                ConsensusHeight = 784_587
+        //            }
+        //        }
+        //    };
+        //
+        //    var peerInfo3 = new PeerInfoModel()
+        //    {
+        //        Id = 5,
+        //        EndPoint = new IPEndPoint(15134635, 19879),
+        //        LatestInfoPayload = new NodeInfoPayload()
+        //        {
+        //            IsNodeCloned = true,
+        //            IsNodeRunning = false,
+        //            NodeRepoInfo = new NodeRepositoryVersionInfo()
+        //            {
+        //                LatestCommitDate = new DateTime(2019, 1, 3),
+        //                LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
+        //            }
+        //        }
+        //    };
+        //
+        //    PeersInformationModel fakeModel = new PeersInformationModel();
+        //    fakeModel.PeersInfo = new List<PeerInfoModel>()
+        //    {
+        //        peerInfo1, peerInfo2, peerInfo3
+        //    };
+        //
+        //    return View("Index", fakeModel);
         //}
+
+        public IActionResult Index()
+        {
+            PeersInformationModel infoModel = this.peersController.GetPeersInfo();
+
+            return View(infoModel);
+        }
 
         public IActionResult Request_Update(int peerId)
         {
-            //PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+            this.peersController.SendRequest_Update(peerId);
 
-            return View();
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Request_StartNode(int peerId)
+        {
+            //this.peersController.SendRequest_Update(peerId);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Request_StopNode(int peerId)
+        {
+            //this.peersController.SendRequest_Update(peerId);
+
+            return RedirectToAction("Index", "Home");
         }
 
         public IActionResult About()
