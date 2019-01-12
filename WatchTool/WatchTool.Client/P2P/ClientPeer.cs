@@ -26,7 +26,7 @@ namespace WatchTool.Client.P2P
                     break;
 
                 case StopNodeRequestPayload _:
-                    this.nodeController.StopNode();
+                    await this.nodeController.StopNodeAsync().ConfigureAwait(false);
                     break;
 
                 case GetInfoRequestPayload _:

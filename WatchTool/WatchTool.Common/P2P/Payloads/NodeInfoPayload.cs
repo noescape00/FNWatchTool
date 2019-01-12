@@ -29,5 +29,7 @@ namespace WatchTool.Common.P2P.Payloads
     public class RunningNodeInfo
     {
         public int ConsensusHeight { get; set; }
+
+        public string LastConsoleOutput { get; set; }
     }
 }

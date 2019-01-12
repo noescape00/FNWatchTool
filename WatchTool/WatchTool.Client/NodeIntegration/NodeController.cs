@@ -1,24 +1,36 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Management.Automation;
+using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Client.NodeIntegration
 {
-    public class NodeController
+    public class NodeController : IDisposable
     {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly GitIntegration git;
 
+        private readonly APIIntegration api;
+
         private Task nodeUpdatingTask;
 
-        public NodeController(GitIntegration git)
+        private bool NodeWasLaunched = false;
+
+        private Task nodeStatusUpdateTask;
+
+        private CancellationTokenSource cancellation;
+
+        private string lastConsoleOutput;
+
+
+        public NodeController()
         {
-            this.git = git;
+            this.git = new GitIntegration();
+            this.api = new APIIntegration();
+            this.lastConsoleOutput = null;
 
             this.nodeUpdatingTask = Task.CompletedTask;
         }
@@ -35,6 +47,12 @@ namespace WatchTool.Client.NodeIntegration
                 return;
             }
 
+            if (this.NodeWasLaunched)
+            {
+                this.logger.Trace("(-)[NODE_IS_RUNNING]");
+                return;
+            }
+
             this.nodeUpdatingTask = this.git.UpdateAndBuildRepositoryAsync();
 
             this.logger.Trace("(-)");
@@ -46,15 +64,33 @@ namespace WatchTool.Client.NodeIntegration
 
             var info = new NodeInfoPayload();
 
-            bool nodeCloned = this.git.GetSolutionPath() != null;
-            info.IsNodeCloned = nodeCloned;
+            info.IsNodeCloned = this.git.IsNodeCloned();
 
-            if (!nodeCloned)
+            if (!info.IsNodeCloned)
                 return info;
 
             info.NodeRepoInfo = git.GetRepoInfo();
 
-            // TODO ADD is running & running info
+            info.IsNodeRunning = this.NodeWasLaunched;
+
+            int consensusHeight = -1;
+
+            // Parse consensus height
+            if (lastConsoleOutput != null)
+            {
+                string data = lastConsoleOutput;
+
+                string key = "Consensus.Height:    ";
+                string consensusHeightString = data.Substring(data.IndexOf(key) + key.Length);
+                consensusHeightString = consensusHeightString.Substring(0, consensusHeightString.IndexOf("   Consensus.Hash"));
+                consensusHeight = int.Parse(consensusHeightString);
+            }
+
+            info.RunningNodeInfo = new RunningNodeInfo()
+            {
+                LastConsoleOutput = lastConsoleOutput,
+                ConsensusHeight = consensusHeight
+            };
 
             this.logger.Trace("(-)");
             return info;
@@ -63,6 +99,16 @@ namespace WatchTool.Client.NodeIntegration
         public void RunNode()
         {
             this.logger.Trace("()");
+
+            if (this.NodeWasLaunched)
+            {
+                this.logger.Trace("(-)[ALREADY_LAUNCHED]");
+                return;
+            }
+
+            this.NodeWasLaunched = true;
+
+            this.logger.Info("Running the node.");
 
             try
             {
@@ -79,6 +125,9 @@ namespace WatchTool.Client.NodeIntegration
                 startInfo.UseShellExecute = true;
                 process.StartInfo = startInfo;
                 process.Start();
+
+                this.cancellation = new CancellationTokenSource();
+                this.nodeStatusUpdateTask = this.UpdateNodeStatusContinuouslyAsync();
             }
             catch (Exception e)
             {
@@ -89,9 +138,60 @@ namespace WatchTool.Client.NodeIntegration
             this.logger.Trace("(-)");
         }
 
-        public void StopNode()
+        public async Task StopNodeAsync()
         {
+            this.logger.Trace("()");
 
+            if (!this.NodeWasLaunched)
+            {
+                this.logger.Trace("(-)[NOT_LAUNCHED]");
+                return;
+            }
+
+            this.logger.Info("Stopping the node.");
+
+            this.cancellation.Cancel();
+            await this.nodeUpdatingTask.ConfigureAwait(false);
+
+            await this.api.StopNode().ConfigureAwait(false);
+
+            this.logger.Trace("(-)");
+        }
+
+        private async Task UpdateNodeStatusContinuouslyAsync()
+        {
+            this.logger.Trace("()");
+
+            try
+            {
+                while (!this.cancellation.IsCancellationRequested)
+                {
+                    try
+                    {
+                        this.lastConsoleOutput = await this.api.GetConsoleOutput(this.cancellation.Token).ConfigureAwait(false);
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    await Task.Delay(5_000, this.cancellation.Token).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException e)
+            {
+            }
+
+            this.logger.Trace("(-)");
+        }
+
+
+        public void Dispose()
+        {
+            this.logger.Trace("()");
+
+            this.nodeStatusUpdateTask.GetAwaiter().GetResult();
+
+            this.logger.Trace("(-)");
         }
     }
 }

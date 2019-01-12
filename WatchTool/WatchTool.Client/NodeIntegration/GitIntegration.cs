@@ -50,6 +50,12 @@ namespace WatchTool.Client.NodeIntegration
             return null;
         }
 
+        public bool IsNodeCloned()
+        {
+            bool nodeCloned = this.GetSolutionPath() != null;
+            return nodeCloned;
+        }
+
         public async Task UpdateAndBuildRepositoryAsync()
         {
             this.logger.Trace("()");

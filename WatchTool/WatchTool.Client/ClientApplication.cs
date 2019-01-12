@@ -41,8 +41,7 @@ namespace WatchTool.Client
             IServiceCollection collection = new ServiceCollection()
                 .AddSingleton<ClientConnectionManager>()
                 .AddSingleton<PayloadProvider>()
-                .AddSingleton<NodeController>()
-                .AddSingleton<GitIntegration>();
+                .AddSingleton<NodeController>();
 
             this.logger.Trace("(-)");
             return collection;
@@ -54,6 +53,7 @@ namespace WatchTool.Client
             this.logger.Info("Application is shutting down...");
 
             this.services.GetRequiredService<ClientConnectionManager>()?.Dispose();
+            this.services.GetRequiredService<NodeController>()?.Dispose();
 
             this.logger.Info("Shutdown completed.");
             this.logger.Trace("(-)");
