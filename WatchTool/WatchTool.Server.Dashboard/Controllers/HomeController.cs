@@ -50,7 +50,7 @@ namespace WatchTool.Server.Dashboard.Controllers
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
+            ViewData["Message"] = "SOME TEXT";
 
             return View();
         }
