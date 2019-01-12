@@ -29,7 +29,5 @@ namespace WatchTool.Common.P2P.Payloads
     public class RunningNodeInfo
     {
         public int ConsensusHeight { get; set; }
-
-        public bool IsStaking { get; set; }
     }
 }

@@ -18,38 +18,43 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peersInfoProvider = peersInfoProvider;
         }
 
-        //public IActionResult Index()
-        //{
-        //    var peerInfo = new PeerInfoModel()
-        //    {
-        //        EndPoint = new IPEndPoint(15134635, 19879),
-        //        LatestInfoPayload = new NodeInfoPayload()
-        //        {
-        //            IsNodeCloned = true,
-        //            IsNodeRunning = false,
-        //            NodeRepoInfo = new NodeRepositoryVersionInfo()
-        //            {
-        //                LatestCommitDate = new DateTime(2019, 1, 3),
-        //                LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
-        //            }
-        //        }
-        //    };
-        //
-        //    PeersInformationModel fakeModel = new PeersInformationModel();
-        //    fakeModel.PeersInfo = new List<PeerInfoModel>()
-        //    {
-        //        peerInfo, peerInfo
-        //    };
-        //
-        //    return View(fakeModel);
-        //}
-
         public IActionResult Index()
         {
-            PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+            var peerInfo = new PeerInfoModel()
+            {
+                Id = 12,
+                EndPoint = new IPEndPoint(15134635, 19879),
+                LatestInfoPayload = new NodeInfoPayload()
+                {
+                    IsNodeCloned = true,
+                    IsNodeRunning = true,
+                    NodeRepoInfo = new NodeRepositoryVersionInfo()
+                    {
+                        LatestCommitDate = new DateTime(2019, 1, 3),
+                        LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
+                    },
+                    RunningNodeInfo = new RunningNodeInfo()
+                    {
+                        ConsensusHeight = 784_587
+                    }
+                }
+            };
 
-            return View(infoModel);
+            PeersInformationModel fakeModel = new PeersInformationModel();
+            fakeModel.PeersInfo = new List<PeerInfoModel>()
+            {
+                peerInfo, peerInfo
+            };
+
+            return View(fakeModel);
         }
+
+        //public IActionResult Index()
+        //{
+        //    PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+        //
+        //    return View(infoModel);
+        //}
 
         public IActionResult About()
         {

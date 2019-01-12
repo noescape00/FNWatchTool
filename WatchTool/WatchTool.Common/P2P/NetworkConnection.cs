@@ -34,6 +34,12 @@ namespace WatchTool.Common.P2P
 
         private readonly PayloadProvider payloadProvider;
 
+        private readonly int id;
+
+        private static object idLock = new object();
+
+        private static int nextIdToAssign = 0;
+
         public NetworkConnection(TcpClient client, PayloadProvider payloadProvider)
         {
             this.client = client;
@@ -45,11 +51,22 @@ namespace WatchTool.Common.P2P
 
             this.cancellation = new CancellationTokenSource();
             this.receiveMessagesTask = this.ReceiveMessagesAsync();
+
+            lock (idLock)
+            {
+                this.id = nextIdToAssign;
+                nextIdToAssign++;
+            }
         }
 
         public bool IsConnected()
         {
             return this.client.Connected;
+        }
+
+        public int GetId()
+        {
+            return this.id;
         }
 
         public EndPoint GetConnectionEndPoint()

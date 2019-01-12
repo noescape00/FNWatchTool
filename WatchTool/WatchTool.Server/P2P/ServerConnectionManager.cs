@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using NLog;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
@@ -20,7 +21,7 @@ namespace WatchTool.Server.P2P
         private readonly List<ServerPeer> peers;
 
         /// <remarks>Should be protected by <see cref="locker"/></remarks>
-        private readonly Dictionary<EndPoint, PeerInfoModel> peerInfo;
+        private readonly Dictionary<int, PeerInfoModel> peerInfoByPeerId;
 
         private bool isDisposing = false;
 
@@ -29,12 +30,8 @@ namespace WatchTool.Server.P2P
             this.locker = new object();
             this.peers = new List<ServerPeer>();
 
-            this.peerInfo = new Dictionary<EndPoint, PeerInfoModel>();
+            this.peerInfoByPeerId = new Dictionary<int, PeerInfoModel>();
         }
-
-        // TODO constantly ask peers for their info model and store them here. Remove when peer disconnects
-
-        // TODO latest peer data container here!
 
         public void OnPeerNodeInfoReceived(NodeInfoPayload nodeInfo, ServerPeer peer)
         {
@@ -42,11 +39,12 @@ namespace WatchTool.Server.P2P
 
             lock (this.locker)
             {
-                EndPoint endPoint = peer.Connection.GetConnectionEndPoint();
+                int id = peer.Connection.GetId();
 
-                this.peerInfo[endPoint] = new PeerInfoModel()
+                this.peerInfoByPeerId[id] = new PeerInfoModel()
                 {
-                    EndPoint = endPoint,
+                    Id = id,
+                    EndPoint = peer.Connection.GetConnectionEndPoint(),
                     LatestInfoPayload = nodeInfo
                 };
             }
@@ -62,7 +60,7 @@ namespace WatchTool.Server.P2P
             {
                 PeersInformationModel model = new PeersInformationModel()
                 {
-                    PeersInfo = this.peerInfo.Values.ToList()
+                    PeersInfo = this.peerInfoByPeerId.Values.ToList()
                 };
 
                 this.logger.Trace("(-)");
@@ -87,7 +85,7 @@ namespace WatchTool.Server.P2P
             {
                 this.peers.Add(peer);
 
-                this.peerInfo.Add(peer.Connection.GetConnectionEndPoint(), null);
+                this.peerInfoByPeerId.Add(peer.Connection.GetId(), null);
 
                 this.LogPeersLocked();
             }
@@ -108,7 +106,7 @@ namespace WatchTool.Server.P2P
             lock (this.locker)
             {
                 bool removedPeer = this.peers.Remove(peer);
-                bool removedPeerInfo = this.peerInfo.Remove(peer.Connection.GetConnectionEndPoint());
+                bool removedPeerInfo = this.peerInfoByPeerId.Remove(peer.Connection.GetId());
 
                 if (!removedPeer || !removedPeerInfo)
                     this.logger.Warn("Unexpected. Removed peer: {0}, removed peer info: {1}", removedPeer, removedPeerInfo);

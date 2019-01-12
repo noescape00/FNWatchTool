@@ -16,6 +16,8 @@ namespace WatchTool.Common.Models
 
     public class PeerInfoModel
     {
+        public int Id { get; set; }
+
         public NodeInfoPayload LatestInfoPayload { get; set; }
 
         public EndPoint EndPoint { get; set; }

@@ -23,6 +23,15 @@ namespace WatchTool.Server.P2P
             this.askForNodeInfoTask = AskForInfoContinuously();
         }
 
+        public async Task SendRequest_Update()
+        {
+            this.logger.Trace("()");
+
+            await this.SendAsync(new GetLatestNodeRequestPayload()).ConfigureAwait(false);
+
+            this.logger.Trace("()");
+        }
+
         protected override async Task OnPayloadReceivedAsync(Payload payload)
         {
             switch (payload)
