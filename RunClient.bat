@@ -1,1 +1,1 @@
-dotnet exec C:\Users\user\Documents\GitHub\FNWatchTool\WatchTool\WatchTool.Client\bin\Debug\netcoreapp2.1\WatchTool.Client.dll
+dotnet exec WatchTool\WatchTool.Client\bin\Debug\netcoreapp2.1\WatchTool.Client.dll
