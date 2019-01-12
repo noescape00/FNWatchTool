@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.P2P.Payloads;
 
@@ -36,7 +37,6 @@ namespace WatchTool.Client.NodeIntegration
             this.logger.Trace("(-)");
         }
 
-        // TODO should return last acquired node info instead of collecting it now
         public NodeInfoPayload GetNodeInfo()
         {
             var info = new NodeInfoPayload();

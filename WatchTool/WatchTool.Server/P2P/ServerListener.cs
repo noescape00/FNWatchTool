@@ -84,7 +84,7 @@ namespace WatchTool.Server.P2P
 
                     this.logger.Info("Connection established with {0}.", tcpClient.Client.RemoteEndPoint);
                     NetworkConnection connection = new NetworkConnection(tcpClient, payloadProvider);
-                    ServerPeer peer = new ServerPeer(connection, failedPeer =>
+                    ServerPeer peer = new ServerPeer(connection, this.connectionManager, failedPeer =>
                     {
                         this.connectionManager.RemovePeer(failedPeer as ServerPeer);
                     });

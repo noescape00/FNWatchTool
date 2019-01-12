@@ -14,7 +14,7 @@ namespace WatchTool.Common.P2P
 
         private readonly Action<PeerBase> onDisconnectedAndDisposed;
 
-        private readonly CancellationTokenSource cancellation;
+        protected readonly CancellationTokenSource cancellation;
 
         private Task consumeMessagesTask;
 
@@ -36,7 +36,7 @@ namespace WatchTool.Common.P2P
             this.consumeMessagesTask = this.ConsumeMessagesContinouslyAsync();
 
             this.lastTimePongReceived = DateTime.MinValue;
-            this.pingingTask = this.PingContinouslyAsync();
+            this.pingingTask = this.PingContinuouslyAsync();
         }
 
         public async Task SendAsync(Payload payload)
@@ -57,6 +57,8 @@ namespace WatchTool.Common.P2P
         {
             try
             {
+                await Task.Delay(1_000, this.cancellation.Token).ConfigureAwait(false);
+
                 while (!this.cancellation.IsCancellationRequested)
                 {
                     Payload payload = await this.Connection.ReceiveIncomingMessageAsync(this.cancellation.Token).ConfigureAwait(false);
@@ -100,10 +102,12 @@ namespace WatchTool.Common.P2P
             }
         }
 
-        private async Task PingContinouslyAsync()
+        private async Task PingContinuouslyAsync()
         {
             try
             {
+                await Task.Delay(1_000, this.cancellation.Token).ConfigureAwait(false);
+
                 while (!this.cancellation.IsCancellationRequested)
                 {
                     this.logger.Debug("Sending ping");
@@ -135,7 +139,7 @@ namespace WatchTool.Common.P2P
             }
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             this.logger.Trace("()");
 

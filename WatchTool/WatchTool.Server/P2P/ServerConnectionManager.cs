@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using NLog;
@@ -15,7 +16,11 @@ namespace WatchTool.Server.P2P
         /// <summary>Protects access to peers collection.</summary>
         private readonly object locker;
 
+        /// <remarks>Should be protected by <see cref="locker"/></remarks>
         private readonly List<ServerPeer> peers;
+
+        /// <remarks>Should be protected by <see cref="locker"/></remarks>
+        private readonly Dictionary<EndPoint, PeerInfoModel> peerInfo;
 
         private bool isDisposing = false;
 
@@ -23,36 +28,46 @@ namespace WatchTool.Server.P2P
         {
             this.locker = new object();
             this.peers = new List<ServerPeer>();
+
+            this.peerInfo = new Dictionary<EndPoint, PeerInfoModel>();
         }
 
         // TODO constantly ask peers for their info model and store them here. Remove when peer disconnects
 
+        // TODO latest peer data container here!
+
+        public void OnPeerNodeInfoReceived(NodeInfoPayload nodeInfo, ServerPeer peer)
+        {
+            this.logger.Trace("()");
+
+            lock (this.locker)
+            {
+                EndPoint endPoint = peer.Connection.GetConnectionEndPoint();
+
+                this.peerInfo[endPoint] = new PeerInfoModel()
+                {
+                    EndPoint = endPoint,
+                    LatestInfoPayload = nodeInfo
+                };
+            }
+
+            this.logger.Trace("(-)");
+        }
+
         public PeersInformationModel GetPeersInfo()
         {
-            // TODO
+            this.logger.Trace("()");
 
-            var peerInfo = new PeerInfoModel()
+            lock (this.locker)
             {
-                EndPoint = new IPEndPoint(1, 1),
-                LatestInfoPayload = new NodeInfoPayload()
+                PeersInformationModel model = new PeersInformationModel()
                 {
-                    IsNodeCloned = true,
-                    IsNodeRunning = false,
-                    NodeRepoInfo = new NodeRepositoryVersionInfo()
-                    {
-                        LatestCommitDate = DateTime.Now,
-                        LatestCommitHash = "hashhashhashhashhashhashhashhashhashhash"
-                    }
-                }
-            };
+                    PeersInfo = this.peerInfo.Values.ToList()
+                };
 
-            PeersInformationModel fakeModel = new PeersInformationModel();
-            fakeModel.PeersInfo = new List<PeerInfoModel>()
-            {
-                peerInfo, peerInfo
-            };
-
-            return fakeModel;
+                this.logger.Trace("(-)");
+                return model;
+            }
         }
 
         public void AddPeer(ServerPeer peer)
@@ -72,6 +87,8 @@ namespace WatchTool.Server.P2P
             {
                 this.peers.Add(peer);
 
+                this.peerInfo.Add(peer.Connection.GetConnectionEndPoint(), null);
+
                 this.LogPeersLocked();
             }
 
@@ -90,7 +107,11 @@ namespace WatchTool.Server.P2P
 
             lock (this.locker)
             {
-                this.peers.Remove(peer);
+                bool removedPeer = this.peers.Remove(peer);
+                bool removedPeerInfo = this.peerInfo.Remove(peer.Connection.GetConnectionEndPoint());
+
+                if (!removedPeer || !removedPeerInfo)
+                    this.logger.Warn("Unexpected. Removed peer: {0}, removed peer info: {1}", removedPeer, removedPeerInfo);
 
                 this.LogPeersLocked();
             }
