@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
-using Microsoft.EntityFrameworkCore.Query.Internal;
+using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Server.P2P
 {
-    public class ServerConnectionManager : IDisposable, IPeersInformationModelProvider
+    public class ServerConnectionManager : IDisposable, IPeersController
     {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -31,6 +30,17 @@ namespace WatchTool.Server.P2P
             this.peers = new List<ServerPeer>();
 
             this.peerInfoByPeerId = new Dictionary<int, PeerInfoModel>();
+        }
+
+        public void SendRequest_Update(int peerId)
+        {
+            lock (this.locker)
+            {
+                ServerPeer peer = this.peers[peerId];
+
+                if (peer != null)
+                    Task.Run(async () => await peer.SendRequest_UpdateAsync());
+            }
         }
 
         public void OnPeerNodeInfoReceived(NodeInfoPayload nodeInfo, ServerPeer peer)

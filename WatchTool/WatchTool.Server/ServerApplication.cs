@@ -45,7 +45,7 @@ namespace WatchTool.Server
                 .AddSingleton<ServerListener>()
                 .AddSingleton<PayloadProvider>()
                 .AddSingleton<ServerConnectionManager>()
-                .AddSingleton(provider => provider.GetService<ServerConnectionManager>() as IPeersInformationModelProvider)
+                .AddSingleton(provider => provider.GetService<ServerConnectionManager>() as IPeersController)
                 .AddSingleton<DashboardHost>();
 
             this.logger.Trace("(-)");

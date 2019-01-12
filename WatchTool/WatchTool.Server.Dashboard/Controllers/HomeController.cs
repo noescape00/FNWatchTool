@@ -11,9 +11,9 @@ namespace WatchTool.Server.Dashboard.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IPeersInformationModelProvider peersInfoProvider;
+        private readonly IPeersController peersInfoProvider;
 
-        public HomeController(IPeersInformationModelProvider peersInfoProvider = null) // TODO not null
+        public HomeController(IPeersController peersInfoProvider = null) // TODO not null
         {
             this.peersInfoProvider = peersInfoProvider;
         }
@@ -55,6 +55,13 @@ namespace WatchTool.Server.Dashboard.Controllers
         //
         //    return View(infoModel);
         //}
+
+        public IActionResult Request_Update(int peerId)
+        {
+            //PeersInformationModel infoModel = this.peersInfoProvider.GetPeersInfo();
+
+            return View();
+        }
 
         public IActionResult About()
         {

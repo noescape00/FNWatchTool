@@ -4,9 +4,11 @@ using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Common.Models
 {
-    public interface IPeersInformationModelProvider
+    public interface IPeersController
     {
         PeersInformationModel GetPeersInfo();
+
+        void SendRequest_Update(int peerId);
     }
 
     public class PeersInformationModel

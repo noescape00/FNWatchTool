@@ -23,7 +23,7 @@ namespace WatchTool.Server.P2P
             this.askForNodeInfoTask = AskForInfoContinuously();
         }
 
-        public async Task SendRequest_Update()
+        public async Task SendRequest_UpdateAsync()
         {
             this.logger.Trace("()");
 
