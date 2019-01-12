@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using WatchTool.Common.P2P.Payloads;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Common.Models
 {
@@ -8,7 +10,7 @@ namespace WatchTool.Common.Models
     {
         PeersInformationModel GetPeersInfo();
 
-        void SendRequest_Update(int peerId);
+        Task SendPayloadToPeerAsync(int peerId, Payload payload);
     }
 
     public class PeersInformationModel

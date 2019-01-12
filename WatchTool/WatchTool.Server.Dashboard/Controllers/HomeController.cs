@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
@@ -83,23 +84,23 @@ namespace WatchTool.Server.Dashboard.Controllers
             return View(infoModel);
         }
 
-        public IActionResult Request_Update(int peerId)
+        public async Task<IActionResult> Request_Update(int peerId)
         {
-            this.peersController.SendRequest_Update(peerId);
+            await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload());
 
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Request_StartNode(int peerId)
+        public async Task<IActionResult> Request_StartNode(int peerId)
         {
-            //this.peersController.SendRequest_Update(peerId);
+            await this.peersController.SendPayloadToPeerAsync(peerId, new StartNodeRequestPayload());
 
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Request_StopNode(int peerId)
+        public async Task<IActionResult> Request_StopNode(int peerId)
         {
-            //this.peersController.SendRequest_Update(peerId);
+            await this.peersController.SendPayloadToPeerAsync(peerId, new StopNodeRequestPayload());
 
             return RedirectToAction("Index", "Home");
         }

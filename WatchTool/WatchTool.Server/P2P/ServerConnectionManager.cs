@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NLog;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
+using WatchTool.Common.P2P.PayloadsBase;
 
 namespace WatchTool.Server.P2P
 {
@@ -32,15 +33,16 @@ namespace WatchTool.Server.P2P
             this.peerInfoByPeerId = new Dictionary<int, PeerInfoModel>();
         }
 
-        public void SendRequest_Update(int peerId)
+        public async Task SendPayloadToPeerAsync(int peerId, Payload payload)
         {
+            ServerPeer peer = null;
+
             lock (this.locker)
             {
-                ServerPeer peer = this.peers[peerId];
-
-                if (peer != null)
-                    Task.Run(async () => await peer.SendRequest_UpdateAsync());
+                peer = this.peers[peerId];
             }
+
+            await peer.SendAsync(payload).ConfigureAwait(false);
         }
 
         public void OnPeerNodeInfoReceived(NodeInfoPayload nodeInfo, ServerPeer peer)

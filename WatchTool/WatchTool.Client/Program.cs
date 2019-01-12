@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace WatchTool.Client
@@ -10,20 +9,6 @@ namespace WatchTool.Client
 
         private static void Main(string[] args)
         {
-            string argumants = "/C dotnet exec \"C:\\Users\\user\\AppData\\Roaming\\WatchTool_StratisFNRepo\\StratisBitcoinFullNode\\src\\Stratis.StratisD\\bin\\Debug\\netcoreapp2.1\\Stratis.StratisD.dll\"";
-
-            Console.WriteLine("=================================---------------------");
-
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = "cmd.exe";
-            startInfo.Arguments = argumants;
-            startInfo.UseShellExecute = true;
-            process.StartInfo = startInfo;
-            process.Start();
-
-
-            Console.ReadKey();
             new Program().MainAsync(args).GetAwaiter().GetResult();
         }
 
