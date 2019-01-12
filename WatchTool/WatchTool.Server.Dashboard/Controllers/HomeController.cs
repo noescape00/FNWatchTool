@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WatchTool.Common.Models;
@@ -29,6 +32,14 @@ namespace WatchTool.Server.Dashboard.Controllers
         //        }
         //    };
         //
+        //
+        //    string log = "";
+        //    for (int i = 0; i < 55; i++)
+        //    {
+        //        log += "START -- Peer:[::ffff:23.102.35.247]:26178, connected:outbound, (r/s):717485*/717485* agent:GT-StratisNode:3.0.0 ---FIN" + Environment.NewLine;
+        //    }
+        //
+        //
         //    var peerInfo2 = new PeerInfoModel()
         //    {
         //        Id = 4,
@@ -44,7 +55,8 @@ namespace WatchTool.Server.Dashboard.Controllers
         //            },
         //            RunningNodeInfo = new RunningNodeInfo()
         //            {
-        //                ConsensusHeight = 784_587
+        //                ConsensusHeight = 784_587,
+        //                LastConsoleOutput = log
         //            }
         //        }
         //    };
