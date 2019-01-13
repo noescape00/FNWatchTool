@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -31,42 +32,50 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peerUpdatedQueue.Enqueue(model);
         }
 
-        // TODO remove
-        public IActionResult Index()
-        {
-            var m = new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()};
-
-            m.PeersInfo.Add(new PeerInfoModel()
-            {
-                EndPoint = new IPEndPoint(1,1),
-                Id = 13,
-                LatestInfoPayload = new NodeInfoPayload()
-                {
-                    IsNodeCloned = false,
-                    IsNodeRunning = false
-                }
-            });
-
-
-            return View(m);
-        }
-
+        //// TODO remove
         //public IActionResult Index()
         //{
-        //    PeersInformationModel infoModel = this.peersController.GetPeersInfo();
+        //    var m = new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()};
         //
-        //    return View(infoModel);
+        //    m.PeersInfo.Add(new PeerInfoModel()
+        //    {
+        //        EndPoint = new IPEndPoint(1,1),
+        //        Id = 13,
+        //        LatestInfoPayload = new NodeInfoPayload()
+        //        {
+        //            IsNodeCloned = false,
+        //            IsNodeRunning = false
+        //        }
+        //    });
+        //
+        //
+        //    return View(m);
         //}
+
+        public IActionResult Index()
+        {
+            PeersInformationModel infoModel = this.peersController.GetPeersInfo();
+
+            return View(infoModel);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Request_Update(int peerId)
         {
-            if (this.peersController != null)
-                await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload()).ConfigureAwait(false);
+            try
+            {
+                if (this.peersController != null)
+                    await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload()).ConfigureAwait(false);
 
-            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+                var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
-            return data;
+                return View("~/Views/Partial/PeerRow.cshtml", data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         [HttpPost]
@@ -77,7 +86,7 @@ namespace WatchTool.Server.Dashboard.Controllers
 
             var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
-            return data;
+            return View("~/Views/Partial/PeerRow.cshtml", data);
         }
 
         [HttpPost]
@@ -88,28 +97,14 @@ namespace WatchTool.Server.Dashboard.Controllers
 
             var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
-            return data;
+            return View("~/Views/Partial/PeerRow.cshtml", data);
         }
 
-        public async Task<IActionResult> GetNextPeerUpdateAsync(int peerId) // TODO
+        public async Task<PeerInfoModel> GetNextPeerUpdateAsync(int peerId) // TODO
         {
+            await Task.Delay(5000);
 
-            await Task.Delay(2000);
-
-            PeerInfoModel model = new PeerInfoModel()
-            {
-                EndPoint = new IPEndPoint(55,55),
-                Id = 13,
-                LatestInfoPayload = new NodeInfoPayload()
-                {
-                    IsNodeCloned = false,
-                    IsNodeRunning = false,
-                    RunningNodeInfo = new RunningNodeInfo(),
-                    NodeRepoInfo = new NodeRepositoryVersionInfo()
-                }
-            };
-
-            return View("~/Views/Partial/PeerRow.cshtml", model);
+            return this.peersController.GetPeersInfo().PeersInfo.Single(x => x.Id == peerId);
         }
 
         public IActionResult About()

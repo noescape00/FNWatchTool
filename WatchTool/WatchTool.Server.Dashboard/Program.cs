@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 
 namespace WatchTool.Server.Dashboard
 {
     public class Program
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static void Main(string[] args)
         {
             new WebHostBuilder()
@@ -28,9 +33,16 @@ namespace WatchTool.Server.Dashboard
             var root = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(location).FullName).FullName).FullName).FullName;
             var actualPath = Path.Combine(root, "WatchTool.Server.Dashboard");
 
+            if (!Directory.Exists(actualPath))
+                actualPath = Directory.GetCurrentDirectory();
+
+            logger.Info("Using root addr: " + actualPath);
+
+
             IWebHost host = webHostBuilder
                 .UseKestrel(options =>
                 {
+                    options.Limits.MaxConcurrentConnections = 30;
                     //Action<ListenOptions> configureListener = listenOptions => { listenOptions.UseHttps(certificate); };
                     //var ipAddresses = Dns.GetHostAddresses(apiSettings.ApiUri.DnsSafeHost);
                     //foreach (var ipAddress in ipAddresses)

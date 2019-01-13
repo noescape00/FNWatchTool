@@ -27,7 +27,7 @@
 
 <br />
 <br />
-<br />
+<p id="textContainer"></p>
 
 <script>
 
@@ -51,21 +51,24 @@
 
         replaceActionsWithLoadingScreen(updatePeerID);
 
-
         $.ajax({
             type: "POST",
             url: targetUrl,
             data: model,
             dataType: 'html',
+            contentType: "html",
             success: function (data) {
                 var elementId = 'peerRow' + updatePeerID;
 
                 $('#' + elementId).html(data);
             },
             // Display error.
-            error:   function(jqXHR, textStatus, errorThrown) {
+            error: function (jqXHR, textStatus, errorThrown) {
+
+                $('#textContainer').html(jqXHR.responseText);
+
                 alert("Error, status = " + textStatus + ", " +
-                    "error thrown: " + errorThrown
+                    "error thrown: " + errorThrown + "jqXHR " + jqXHR.responseText
                 );
             }
         });
@@ -78,7 +81,6 @@
         $('#' + actionsId).html("loading...");
     }
 </script>
-
 
 <table class="table">
     <thead class="thead-dark">
