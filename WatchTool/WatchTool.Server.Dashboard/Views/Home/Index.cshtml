@@ -29,29 +29,60 @@
 <br />
 <br />
 
-<p><input type="button" value="Add File" id="qweButton" onclick="callMethod()" /></p>
-
 <script>
 
-    function callMethod() {
+    function callStartNode(updatePeerID) {
+        var targetUrl = "@Url.Action("Request_StartNode", "Home")";
+        callMethod(targetUrl, updatePeerID);
+    }
+
+    function callStopNode(updatePeerID) {
+        var targetUrl = "@Url.Action("Request_StopNode", "Home")";
+        callMethod(targetUrl, updatePeerID);
+    }
+
+    function callUpdateNode(updatePeerID) {
+        var targetUrl = "@Url.Action("Request_Update", "Home")";
+        callMethod(targetUrl, updatePeerID);
+    }
+
+    function callMethod(targetUrl, updatePeerID) {
+        var model = { peerId: updatePeerID };
+
+        replaceActionsWithLoadingScreen(updatePeerID);
+
+
         $.ajax({
-            url: '@Url.Action("WaitForPeerBeingUpdated", "Home", new { peerId = "15" })',
-            type: 'POST',
-            contentType: 'application/json',
-            async: false,
+            type: "POST",
+            url: targetUrl,
+            data: model,
+            dataType: 'html',
             success: function (data) {
-                alert(data);
+                var elementId = 'peerRow' + updatePeerID;
+
+                $('#' + elementId).html(data);
+            },
+            // Display error.
+            error:   function(jqXHR, textStatus, errorThrown) {
+                alert("Error, status = " + textStatus + ", " +
+                    "error thrown: " + errorThrown
+                );
             }
         });
     }
-</script>
 
+    function replaceActionsWithLoadingScreen(peerId) {
+
+        var actionsId = 'actions' + peerId;
+
+        $('#' + actionsId).html("loading...");
+    }
+</script>
 
 
 <table class="table">
     <thead class="thead-dark">
         <tr>
-            <th scope="col">#</th>
             <th scope="col">EndPoint</th>
             <th scope="col">Node Version</th>
             <th scope="col">Is running</th>
@@ -60,103 +91,13 @@
         </tr>
     </thead>
     <tbody>
-        @{
-            for (int i = 0; i < Model.PeersInfo.Count; i++)
-            {
-                int rowNumber = i + 1;
+        @foreach (var peer in Model.PeersInfo)
+        {
+            string rowId = "peerRow" + peer.Id;
 
-                PeerInfoModel peer = Model.PeersInfo[i];
-
-                string nodeVersion = "N/A";
-
-                if (peer.LatestInfoPayload.IsNodeCloned)
-                {
-                    NodeRepositoryVersionInfo repoInfo = peer.LatestInfoPayload.NodeRepoInfo;
-
-                    string hashShort = repoInfo.LatestCommitHash.Substring(0, 7);
-
-                    int daysOld = (int)(DateTime.Now - repoInfo.LatestCommitDate).TotalDays;
-
-                    nodeVersion = $"{hashShort} : {repoInfo.LatestCommitDate.ToShortDateString()} ({daysOld} days old)";
-                }
-
-                string runningInfo = "-";
-                RunningNodeInfo runningInfoModel = peer.LatestInfoPayload.RunningNodeInfo;
-
-                if (runningInfoModel != null)
-                {
-                    runningInfo = $"height: {runningInfoModel.ConsensusHeight}";
-                }
-
-                bool runActionEnabled = !peer.LatestInfoPayload.IsNodeRunning && peer.LatestInfoPayload.IsNodeCloned;
-                bool stopActionEnabled = peer.LatestInfoPayload.IsNodeRunning;
-
-                <tr>
-                    <th scope="row">@rowNumber</th>
-                    <td>@peer.EndPoint</td>
-                    <td>@nodeVersion</td>
-                    <td>
-                        @if (peer.LatestInfoPayload.IsNodeRunning)
-                        {
-                            <span class="badge badge-pill badge-success">Y</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-pill badge-danger">N</span>
-                        }
-                    </td>
-                    <td>
-                        @runningInfo
-
-                        @if (runningInfoModel != null && runningInfoModel.LastConsoleOutput != null)
-                        {
-                            <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal">log</button>
-
-                            <!-- Modal -->
-                            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Latest log from the node</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body codeblock">
-                                            @{
-                                                string[] data = runningInfoModel.LastConsoleOutput.Split(Environment.NewLine);
-
-                                                foreach (string dataString in data)
-                                                {
-                                                    @dataString
-                                                    <br />
-                                                }
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </td>
-                    <td>
-
-                        @if (!stopActionEnabled)
-                        {
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="location.href = '@Url.Action("Request_Update", "Home", new {peerId = peer.Id})'">Update</button>
-                        }
-
-                        @if (runActionEnabled)
-                        {
-                            <button type="button" class="btn btn-success btn-sm" onclick="location.href = '@Url.Action("Request_StartNode", "Home", new {peerId = peer.Id})'">Start node</button>
-                        }
-
-                        @if (stopActionEnabled)
-                        {
-                            <button type="button" class="btn btn-danger btn-sm" onclick="location.href = '@Url.Action("Request_StopNode", "Home", new {peerId = peer.Id})'">Stop node</button>
-                        }
-                    </td>
-                </tr>
-            }
+            <tr id="@rowId">
+                @await Html.PartialAsync("~/Views/Partial/PeerRow.cshtml", peer)
+            </tr>
         }
     </tbody>
 </table>

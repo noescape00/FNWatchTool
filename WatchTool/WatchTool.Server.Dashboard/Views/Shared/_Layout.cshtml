@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
 </head>
 
+
+
 <body>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
+
     <nav class="navbar fixed-top navbar-dark bg-dark">
 
         <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">WatchTool Dashboard</a>
@@ -26,14 +33,7 @@
 
     <div class="container col-xl">
         <br />
-
         @RenderBody()
-
     </div>
-
-    <script src="~/lib/jquery/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
-
-    @RenderSection("Scripts", required: false)
 </body>
 </html>

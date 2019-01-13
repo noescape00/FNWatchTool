@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using WatchTool.Common;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
@@ -31,7 +34,21 @@ namespace WatchTool.Server.Dashboard.Controllers
         // TODO remove
         public IActionResult Index()
         {
-            return View(new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()});
+            var m = new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()};
+
+            m.PeersInfo.Add(new PeerInfoModel()
+            {
+                EndPoint = new IPEndPoint(1,1),
+                Id = 13,
+                LatestInfoPayload = new NodeInfoPayload()
+                {
+                    IsNodeCloned = false,
+                    IsNodeRunning = false
+                }
+            });
+
+
+            return View(m);
         }
 
         //public IActionResult Index()
@@ -41,36 +58,58 @@ namespace WatchTool.Server.Dashboard.Controllers
         //    return View(infoModel);
         //}
 
-
-        // TODO test
         [HttpPost]
-        public async Task<IActionResult> WaitForPeerBeingUpdated(int peerId)
-        {
-            await Task.Delay(1000);
-
-            return Json(5);
-        }
-
-
         public async Task<IActionResult> Request_Update(int peerId)
         {
-            await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload());
+            if (this.peersController != null)
+                await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload()).ConfigureAwait(false);
 
-            return RedirectToAction("Index", "Home");
+            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+
+            return data;
         }
 
+        [HttpPost]
         public async Task<IActionResult> Request_StartNode(int peerId)
         {
-            await this.peersController.SendPayloadToPeerAsync(peerId, new StartNodeRequestPayload());
+            if (this.peersController != null)
+                await this.peersController.SendPayloadToPeerAsync(peerId, new StartNodeRequestPayload()).ConfigureAwait(false);
 
-            return RedirectToAction("Index", "Home");
+            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+
+            return data;
         }
 
+        [HttpPost]
         public async Task<IActionResult> Request_StopNode(int peerId)
         {
-            await this.peersController.SendPayloadToPeerAsync(peerId, new StopNodeRequestPayload());
+            if (this.peersController != null)
+                await this.peersController.SendPayloadToPeerAsync(peerId, new StopNodeRequestPayload()).ConfigureAwait(false);
 
-            return RedirectToAction("Index", "Home");
+            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+
+            return data;
+        }
+
+        public async Task<IActionResult> GetNextPeerUpdateAsync(int peerId) // TODO
+        {
+
+            await Task.Delay(2000);
+
+            PeerInfoModel model = new PeerInfoModel()
+            {
+                EndPoint = new IPEndPoint(55,55),
+                Id = 13,
+                LatestInfoPayload = new NodeInfoPayload()
+                {
+                    IsNodeCloned = false,
+                    IsNodeRunning = false,
+                    RunningNodeInfo = new RunningNodeInfo(),
+                    NodeRepoInfo = new NodeRepositoryVersionInfo()
+                }
+            };
+
+            return View("~/Views/Partial/PeerRow.cshtml", model);
         }
 
         public IActionResult About()
