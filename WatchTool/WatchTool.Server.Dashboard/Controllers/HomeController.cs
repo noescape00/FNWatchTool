@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WatchTool.Common;
@@ -14,12 +15,12 @@ namespace WatchTool.Server.Dashboard.Controllers
 
         private readonly AsyncQueue<PeerInfoModel> peerUpdatedQueue;
 
-        public HomeController(IPeersController peersController)
+        public HomeController(IPeersController peersController = null) // TODO
         {
             this.peersController = peersController;
             this.peerUpdatedQueue = new AsyncQueue<PeerInfoModel>();
 
-            this.peersController.AddListener(this);
+            this.peersController?.AddListener(this); // TODO remove ?
         }
 
         public void OnPeerUpdated(PeerInfoModel model)
@@ -27,12 +28,29 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peerUpdatedQueue.Enqueue(model);
         }
 
+        // TODO remove
         public IActionResult Index()
         {
-            PeersInformationModel infoModel = this.peersController.GetPeersInfo();
-
-            return View(infoModel);
+            return View(new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()});
         }
+
+        //public IActionResult Index()
+        //{
+        //    PeersInformationModel infoModel = this.peersController.GetPeersInfo();
+        //
+        //    return View(infoModel);
+        //}
+
+
+        // TODO test
+        [HttpPost]
+        public async Task<IActionResult> WaitForPeerBeingUpdated(int peerId)
+        {
+            await Task.Delay(1000);
+
+            return Json(5);
+        }
+
 
         public async Task<IActionResult> Request_Update(int peerId)
         {
@@ -70,7 +88,7 @@ namespace WatchTool.Server.Dashboard.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            this.peersController.RemoveListener(this);
+            this.peersController?.RemoveListener(this); // TODO remove ?
 
             base.Dispose(disposing);
         }
