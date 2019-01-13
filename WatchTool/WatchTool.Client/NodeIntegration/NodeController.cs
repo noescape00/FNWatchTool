@@ -195,7 +195,7 @@ namespace WatchTool.Client.NodeIntegration
         {
             this.logger.Trace("()");
 
-            this.nodeStatusUpdateTask.GetAwaiter().GetResult();
+            this.nodeStatusUpdateTask?.GetAwaiter().GetResult();
 
             this.logger.Trace("(-)");
         }
