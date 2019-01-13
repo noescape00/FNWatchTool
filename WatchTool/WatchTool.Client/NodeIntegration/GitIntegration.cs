@@ -56,7 +56,7 @@ namespace WatchTool.Client.NodeIntegration
             return nodeCloned;
         }
 
-        public async Task UpdateAndBuildRepositoryAsync()
+        public async Task UpdateAndBuildRepositoryAsync(Func<Task> onNodeUpdated)
         {
             this.logger.Trace("()");
 
@@ -110,6 +110,8 @@ namespace WatchTool.Client.NodeIntegration
             }
 
             this.logger.Info("Build completed.");
+
+            await onNodeUpdated().ConfigureAwait(false);
 
             this.logger.Trace("(-)");
         }

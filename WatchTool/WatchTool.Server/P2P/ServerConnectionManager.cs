@@ -23,6 +23,9 @@ namespace WatchTool.Server.P2P
         /// <remarks>Should be protected by <see cref="locker"/></remarks>
         private readonly Dictionary<int, PeerInfoModel> peerInfoByPeerId;
 
+        /// <remarks>Should be protected by <see cref="locker"/></remarks>
+        private readonly List<IPeerStateUpdateListener> listeners;
+
         private bool isDisposing = false;
 
         public ServerConnectionManager()
@@ -31,6 +34,7 @@ namespace WatchTool.Server.P2P
             this.peers = new List<ServerPeer>();
 
             this.peerInfoByPeerId = new Dictionary<int, PeerInfoModel>();
+            this.listeners = new List<IPeerStateUpdateListener>();
         }
 
         public async Task SendPayloadToPeerAsync(int peerId, Payload payload)
@@ -49,20 +53,48 @@ namespace WatchTool.Server.P2P
         {
             this.logger.Trace("()");
 
+            List<IPeerStateUpdateListener> listenersCopy;
+            PeerInfoModel infoModel;
+
             lock (this.locker)
             {
                 int id = peer.Connection.GetId();
 
-                this.peerInfoByPeerId[id] = new PeerInfoModel()
+                infoModel = new PeerInfoModel()
                 {
                     Id = id,
                     EndPoint = peer.Connection.GetConnectionEndPoint(),
                     LatestInfoPayload = nodeInfo
                 };
+                this.peerInfoByPeerId[id] = infoModel;
+
+                listenersCopy = new List<IPeerStateUpdateListener>(this.listeners);
+            }
+
+            foreach (IPeerStateUpdateListener listener in listenersCopy)
+            {
+                listener.OnPeerUpdated(infoModel);
             }
 
             this.logger.Trace("(-)");
         }
+
+        public void AddListener(IPeerStateUpdateListener listener)
+        {
+            lock (locker)
+            {
+                this.listeners.Add(listener);
+            }
+        }
+
+        public void RemoveListener(IPeerStateUpdateListener listener)
+        {
+            lock (locker)
+            {
+                this.listeners.Remove(listener);
+            }
+        }
+
 
         public PeersInformationModel GetPeersInfo()
         {

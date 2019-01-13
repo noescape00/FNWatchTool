@@ -14,7 +14,7 @@ namespace WatchTool.Server.P2P
         private readonly Task askForNodeInfoTask;
 
         /// <summary>How often do we request update from a node.</summary>
-        private const int RefreshIntervalSeconds = 10;
+        private const int RefreshIntervalSeconds = 60;
 
         public ServerPeer(NetworkConnection connection, ServerConnectionManager connectionManager, Action<PeerBase> onDisconnectedAndDisposed) : base(connection, onDisconnectedAndDisposed)
         {

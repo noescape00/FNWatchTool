@@ -36,7 +36,7 @@ namespace WatchTool.Client.NodeIntegration
         }
 
         /// <summary>Clones or updates the node in the background.</summary>
-        public void StartUpdatingOrCloningTheNode()
+        public void StartUpdatingOrCloningTheNode(Func<Task> onNodeUpdated)
         {
             this.logger.Trace("()");
 
@@ -53,7 +53,7 @@ namespace WatchTool.Client.NodeIntegration
                 return;
             }
 
-            this.nodeUpdatingTask = this.git.UpdateAndBuildRepositoryAsync();
+            this.nodeUpdatingTask = this.git.UpdateAndBuildRepositoryAsync(onNodeUpdated);
 
             this.logger.Trace("(-)");
         }

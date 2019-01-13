@@ -11,6 +11,15 @@ namespace WatchTool.Common.Models
         PeersInformationModel GetPeersInfo();
 
         Task SendPayloadToPeerAsync(int peerId, Payload payload);
+
+        void AddListener(IPeerStateUpdateListener listener);
+
+        void RemoveListener(IPeerStateUpdateListener listener);
+    }
+
+    public interface IPeerStateUpdateListener
+    {
+        void OnPeerUpdated(PeerInfoModel model);
     }
 
     public class PeersInformationModel

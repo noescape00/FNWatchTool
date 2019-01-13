@@ -23,26 +23,33 @@ namespace WatchTool.Client.P2P
             {
                 case StartNodeRequestPayload _:
                     this.nodeController.RunNode();
+                    await this.SendInfoPayload().ConfigureAwait(false);
                     break;
 
                 case StopNodeRequestPayload _:
                     await this.nodeController.StopNodeAsync().ConfigureAwait(false);
+                    await this.SendInfoPayload().ConfigureAwait(false);
                     break;
 
                 case GetInfoRequestPayload _:
-                    NodeInfoPayload nodeInfo = this.nodeController.GetNodeInfo();
-
-                    await this.SendAsync(nodeInfo).ConfigureAwait(false);
+                    await this.SendInfoPayload().ConfigureAwait(false);
                     break;
 
                 case GetLatestNodeRequestPayload _:
-                    this.nodeController.StartUpdatingOrCloningTheNode();
+                    this.nodeController.StartUpdatingOrCloningTheNode(async () => await this.SendInfoPayload().ConfigureAwait(false));
                     break;
 
                 default:
                     await base.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
                     break;
             }
+        }
+
+        private async Task SendInfoPayload()
+        {
+            NodeInfoPayload nodeInfo = this.nodeController.GetNodeInfo();
+
+            await this.SendAsync(nodeInfo).ConfigureAwait(false);
         }
     }
 }
