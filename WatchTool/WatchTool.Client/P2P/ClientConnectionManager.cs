@@ -22,11 +22,14 @@ namespace WatchTool.Client.P2P
 
         private readonly NodeController nodeController;
 
-        public ClientConnectionManager(PayloadProvider payloadProvider, NodeController nodeController)
+        private readonly ClientConfiguration config;
+
+        public ClientConnectionManager(PayloadProvider payloadProvider, NodeController nodeController, ClientConfiguration config)
         {
             this.ActivePeer = null;
             this.payloadProvider = payloadProvider;
             this.nodeController = nodeController;
+            this.config = config;
 
             this.cancellation = new CancellationTokenSource();
         }
@@ -53,7 +56,7 @@ namespace WatchTool.Client.P2P
                     this.logger.Info("Connecting to server...");
 
                     NetworkConnection connection = await NetworkConnection.EstablishConnection(
-                        ClientConfiguration.ServerEndPoint, this.payloadProvider,
+                        this.config.ServerEndPoint, this.payloadProvider,
                         this.cancellation.Token).ConfigureAwait(false);
 
                     this.ActivePeer = new ClientPeer(connection, this.nodeController, peer =>
@@ -75,7 +78,7 @@ namespace WatchTool.Client.P2P
 
                     try
                     {
-                        await Task.Delay(ClientConfiguration.ConnectToServerRetryDelaySeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
+                        await Task.Delay(this.config.ConnectToServerRetryDelaySeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {

@@ -26,10 +26,10 @@ namespace WatchTool.Client.NodeIntegration
         private string lastConsoleOutput;
 
 
-        public NodeController()
+        public NodeController(ClientConfiguration config)
         {
-            this.git = new GitIntegration();
-            this.api = new APIIntegration();
+            this.git = new GitIntegration(config);
+            this.api = new APIIntegration(config);
             this.lastConsoleOutput = null;
 
             this.nodeUpdatingTask = Task.CompletedTask;

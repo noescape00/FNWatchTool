@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
@@ -10,9 +11,13 @@ namespace WatchTool.Client.NodeIntegration
     {
         private readonly string apiEndPoint;
 
-        public APIIntegration()
+        private readonly ClientConfiguration config;
+
+        public APIIntegration(ClientConfiguration config)
         {
-            this.apiEndPoint = $"http://localhost:{ClientConfiguration.ApiPort}/";
+            this.config = config;
+
+            this.apiEndPoint = $"http://localhost:{this.config.ApiPort}/";
         }
 
         public async Task<string> GetConsoleOutput(CancellationToken token)
@@ -30,17 +35,23 @@ namespace WatchTool.Client.NodeIntegration
 
         public async Task StopNode()
         {
-            string endpoint = apiEndPoint + "api/Node/stop";
+            try
+            {
+                string endpoint = apiEndPoint + "api/Node/stop";
 
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-            request.Content = new StringContent("true",
-                Encoding.UTF8,
-                "application/json");//CONTENT-TYPE header
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                request.Content = new StringContent("true",
+                    Encoding.UTF8,
+                    "application/json");//CONTENT-TYPE header
 
-            await client.SendAsync(request);
+                await client.SendAsync(request);
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }

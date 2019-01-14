@@ -14,9 +14,16 @@ namespace WatchTool.Client.NodeIntegration
     {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        private readonly ClientConfiguration config;
+
+        public GitIntegration(ClientConfiguration config)
+        {
+            this.config = config;
+        }
+
         public bool WorkFolderExists()
         {
-            return Directory.Exists(ClientConfiguration.WorkFolder);
+            return Directory.Exists(this.config.WorkFolder);
         }
 
         public string GetRepoPath()
@@ -24,7 +31,7 @@ namespace WatchTool.Client.NodeIntegration
             if (!this.WorkFolderExists())
                 return null;
 
-            foreach (string directory in Directory.EnumerateDirectories(ClientConfiguration.WorkFolder, ".git", SearchOption.AllDirectories))
+            foreach (string directory in Directory.EnumerateDirectories(this.config.WorkFolder, ".git", SearchOption.AllDirectories))
             {
                 return Path.GetDirectoryName(directory);
             }
@@ -63,15 +70,15 @@ namespace WatchTool.Client.NodeIntegration
             if (!this.WorkFolderExists() || this.GetRepoPath() == null)
             {
                 // Clone
-                Directory.CreateDirectory(ClientConfiguration.WorkFolder);
+                Directory.CreateDirectory(this.config.WorkFolder);
 
                 await Task.Delay(500).ConfigureAwait(false);
 
                 using (PowerShell ps = PowerShell.Create())
                 {
-                    ps.AddScript($@"cd {ClientConfiguration.WorkFolder}");
+                    ps.AddScript($@"cd {this.config.WorkFolder}");
 
-                    ps.AddScript($@"git clone {ClientConfiguration.RepoPath}");
+                    ps.AddScript($@"git clone {this.config.RepoPath}");
 
                     ps.Invoke();
 

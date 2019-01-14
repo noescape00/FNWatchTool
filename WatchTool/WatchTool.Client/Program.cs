@@ -17,7 +17,7 @@ namespace WatchTool.Client
             Console.CancelKeyPress += ShutdownHandler;
 
             application = new ClientApplication();
-            await application.StartAsync();
+            await application.StartAsync(args);
 
             await Task.Delay(-1);
         }
