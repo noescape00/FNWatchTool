@@ -72,9 +72,7 @@ namespace WatchTool.Server.P2P
             }
 
             foreach (IPeerStateUpdateListener listener in listenersCopy)
-            {
                 listener.OnPeerUpdated(infoModel);
-            }
 
             this.logger.Trace("(-)");
         }
@@ -95,7 +93,6 @@ namespace WatchTool.Server.P2P
             }
         }
 
-
         public PeersInformationModel GetPeersInfo()
         {
             this.logger.Trace("()");
@@ -104,7 +101,7 @@ namespace WatchTool.Server.P2P
             {
                 PeersInformationModel model = new PeersInformationModel()
                 {
-                    PeersInfo = this.peerInfoByPeerId.Values.ToList()
+                    PeersInfo = this.peerInfoByPeerId.Values.Where(x => x != null).ToList()
                 };
 
                 this.logger.Trace("(-)");

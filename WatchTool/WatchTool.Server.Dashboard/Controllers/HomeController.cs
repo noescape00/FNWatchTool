@@ -24,12 +24,12 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peersController = peersController;
             this.peerUpdatedQueue = new AsyncQueue<PeerInfoModel>();
 
-            this.peersController?.AddListener(this); // TODO remove ?
+            this.peersController?.AddListener(this); // TODO remove '?'
         }
 
         public void OnPeerUpdated(PeerInfoModel model)
         {
-            this.peerUpdatedQueue.Enqueue(model);
+            this.peerUpdatedQueue.Enqueue(model); // how to consume this best? TODO. queue per request here so maybe dequeue till we have what we want
         }
 
         //// TODO remove
@@ -55,6 +55,11 @@ namespace WatchTool.Server.Dashboard.Controllers
         public IActionResult Index()
         {
             PeersInformationModel infoModel = this.peersController.GetPeersInfo();
+
+            if (infoModel.PeersInfo.Any(x => x == null))
+            {
+
+            }
 
             return View(infoModel);
         }
