@@ -105,11 +105,17 @@ namespace WatchTool.Server.Dashboard.Controllers
             return View("~/Views/Partial/PeerRow.cshtml", data);
         }
 
-        public async Task<PeerInfoModel> GetNextPeerUpdateAsync(int peerId) // TODO
+        public async Task<PeerInfoModel> GetNextPeerUpdateAsync(int peerId)
         {
-            await Task.Delay(5000);
+            while (true)
+            {
+                PeerInfoModel item = await this.peerUpdatedQueue.DequeueAsync().ConfigureAwait(false);
 
-            return this.peersController.GetPeersInfo().PeersInfo.Single(x => x.Id == peerId);
+                if (item.Id == peerId)
+                {
+                    return item;
+                }
+            }
         }
 
         public IActionResult About()

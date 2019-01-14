@@ -131,6 +131,16 @@ namespace WatchTool.Client.NodeIntegration
                 throw;
             }
 
+            while (true)
+            {
+                runningResult = await this.IsNodeLaunchedAsync(token).ConfigureAwait(false);
+
+                if (runningResult.IsNodeRunning)
+                    break;
+
+                await Task.Delay(1500, token).ConfigureAwait(false);
+            }
+
             this.logger.Trace("(-)");
         }
 
@@ -149,6 +159,9 @@ namespace WatchTool.Client.NodeIntegration
             this.logger.Info("Stopping the node.");
 
             await this.api.StopNodeAsync(token).ConfigureAwait(false);
+
+            // Give node some time to stop.
+            await Task.Delay(1000, token).ConfigureAwait(false);
 
             this.logger.Trace("(-)");
         }

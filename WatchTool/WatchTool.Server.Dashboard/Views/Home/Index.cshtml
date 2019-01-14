@@ -51,6 +51,8 @@
 
         replaceActionsWithLoadingScreen(updatePeerID);
 
+        ajaxRequests++;
+
         $.ajax({
             type: "POST",
             url: targetUrl,
@@ -59,13 +61,15 @@
             contentType: "html",
             success: function (data) {
                 var elementId = 'peerRow' + updatePeerID;
-
+                ajaxRequests--;
                 $('#' + elementId).html(data);
             },
             // Display error.
             error: function (jqXHR, textStatus, errorThrown) {
 
                 $('#textContainer').html(jqXHR.responseText);
+
+                ajaxRequests--;
 
                 alert("Error, status = " + textStatus + ", " +
                     "error thrown: " + errorThrown + "jqXHR " + jqXHR.responseText
@@ -78,28 +82,48 @@
 
         var actionsId = 'actions' + peerId;
 
-        $('#' + actionsId).html("loading...");
+        $('#' + actionsId).html("executing command...");
     }
+
+    // Auto refresh. This is really hacky but I don't have enough time for figuring out how to do refresh peers with ajax properly.
+    var ajaxRequests = 0;
+
+    var time = new Date().getTime();
+    $(document.body).bind("mousemove keypress", function(e) {
+        time = new Date().getTime();
+    });
+
+    function refresh() {
+        if (new Date().getTime() - time >= 10000 && ajaxRequests == 0)
+            window.location.reload(true);
+        else
+            setTimeout(refresh, 5000);
+    }
+
+    setTimeout(refresh, 5000);
 </script>
 
 <table class="table">
     <thead class="thead-dark">
-        <tr>
-            <th scope="col">EndPoint</th>
-            <th scope="col">Node Version</th>
-            <th scope="col">Is running</th>
-            <th scope="col">Info</th>
-            <th scope="col">Actions</th>
-        </tr>
+    <tr>
+        <th scope="col">EndPoint</th>
+        <th scope="col">Node Version</th>
+        <th scope="col">Is running</th>
+        <th scope="col">Info</th>
+        <th scope="col">Actions</th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var peer in Model.PeersInfo)
-        {
-            string rowId = "peerRow" + peer.Id;
+    @foreach (var peer in Model.PeersInfo)
+    {
+        string rowId = "peerRow" + peer.Id;
 
-            <tr id="@rowId">
-                @await Html.PartialAsync("~/Views/Partial/PeerRow.cshtml", peer)
-            </tr>
-        }
+        <tr id="@rowId">
+            @await Html.PartialAsync("~/Views/Partial/PeerRow.cshtml", peer)
+        </tr>
+    }
     </tbody>
 </table>
+
+<br/>
+<br/>
