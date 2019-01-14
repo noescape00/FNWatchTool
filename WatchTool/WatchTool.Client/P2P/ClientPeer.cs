@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using WatchTool.Client.NodeIntegration;
 using WatchTool.Common.P2P;
@@ -17,37 +18,38 @@ namespace WatchTool.Client.P2P
             this.nodeController = nodeController;
         }
 
-        protected override async Task OnPayloadReceivedAsync(Payload payload)
+        protected override async Task OnPayloadReceivedAsync(Payload payload, CancellationToken token)
         {
             switch (payload)
             {
                 case StartNodeRequestPayload _:
-                    this.nodeController.RunNode();
-                    await this.SendInfoPayload().ConfigureAwait(false);
+                    await this.nodeController.RunNodeAsync(token).ConfigureAwait(false);
+                    await this.SendInfo(token).ConfigureAwait(false);
                     break;
 
                 case StopNodeRequestPayload _:
-                    await this.nodeController.StopNodeAsync().ConfigureAwait(false);
-                    await this.SendInfoPayload().ConfigureAwait(false);
-                    break;
-
-                case GetInfoRequestPayload _:
-                    await this.SendInfoPayload().ConfigureAwait(false);
+                    await this.nodeController.StopNodeAsync(token).ConfigureAwait(false);
+                    await this.SendInfo(token).ConfigureAwait(false);
                     break;
 
                 case GetLatestNodeRequestPayload _:
-                    this.nodeController.StartUpdatingOrCloningTheNode(async () => await this.SendInfoPayload().ConfigureAwait(false));
+                    await this.nodeController.UpdateOrCloneTheNodeAsync().ConfigureAwait(false);
+                    await this.SendInfo(token).ConfigureAwait(false);
+                    break;
+
+                case GetInfoRequestPayload _:
+                    await this.SendInfo(token).ConfigureAwait(false);
                     break;
 
                 default:
-                    await base.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                    await base.OnPayloadReceivedAsync(payload, token).ConfigureAwait(false);
                     break;
             }
         }
 
-        private async Task SendInfoPayload()
+        private async Task SendInfo(CancellationToken token)
         {
-            NodeInfoPayload nodeInfo = this.nodeController.GetNodeInfo();
+            NodeInfoPayload nodeInfo = await this.nodeController.GetNodeInfo(token).ConfigureAwait(false);
 
             await this.SendAsync(nodeInfo).ConfigureAwait(false);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using WatchTool.Common.P2P;
 using WatchTool.Common.P2P.Payloads;
@@ -23,7 +24,7 @@ namespace WatchTool.Server.P2P
             this.askForNodeInfoTask = AskForInfoContinuously();
         }
 
-        protected override async Task OnPayloadReceivedAsync(Payload payload)
+        protected override async Task OnPayloadReceivedAsync(Payload payload, CancellationToken token)
         {
             switch (payload)
             {
@@ -32,7 +33,7 @@ namespace WatchTool.Server.P2P
                     break;
 
                 default:
-                    await base.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                    await base.OnPayloadReceivedAsync(payload, token).ConfigureAwait(false);
                     break;
             }
         }

@@ -33,7 +33,7 @@ namespace WatchTool.Client.NodeIntegration
             }
         }
 
-        public async Task StopNode()
+        public async Task StopNodeAsync(CancellationToken token)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace WatchTool.Client.NodeIntegration
                     Encoding.UTF8,
                     "application/json");//CONTENT-TYPE header
 
-                await client.SendAsync(request);
+                await client.SendAsync(request, token);
             }
             catch (Exception e)
             {

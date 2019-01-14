@@ -16,15 +16,9 @@ namespace WatchTool.Common.P2P
 
         protected readonly CancellationTokenSource cancellation;
 
-        private Task consumeMessagesTask;
+        private readonly Task consumeMessagesTask;
 
         protected readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        private const int PingIntervalSeconds = 60;
-        private const int PingMaxAnswerDelaySeconds = PingIntervalSeconds / 2;
-
-        private Task pingingTask;
-        private DateTime lastTimePongReceived;
 
         protected PeerBase(NetworkConnection connection, Action<PeerBase> onDisconnectedAndDisposed)
         {
@@ -34,9 +28,6 @@ namespace WatchTool.Common.P2P
             this.cancellation = new CancellationTokenSource();
 
             this.consumeMessagesTask = this.ConsumeMessagesContinouslyAsync();
-
-            this.lastTimePongReceived = DateTime.MinValue;
-            this.pingingTask = this.PingContinuouslyAsync();
         }
 
         public async Task SendAsync(Payload payload)
@@ -73,7 +64,7 @@ namespace WatchTool.Common.P2P
 
                     try
                     {
-                        await this.OnPayloadReceivedAsync(payload).ConfigureAwait(false);
+                        await this.OnPayloadReceivedAsync(payload, this.cancellation.Token).ConfigureAwait(false);
                     }
                     catch (Exception e)
                     {
@@ -86,57 +77,9 @@ namespace WatchTool.Common.P2P
             }
         }
 
-        protected virtual async Task OnPayloadReceivedAsync(Payload payload)
+        protected virtual async Task OnPayloadReceivedAsync(Payload payload, CancellationToken token)
         {
-            switch (payload)
-            {
-                case PingPayload _:
-                    this.logger.Debug("Ping received. Answering with pong.");
-                    await this.SendAsync(new PongPayload());
-                    break;
-
-                case PongPayload _:
-                    this.logger.Debug("Pong received.");
-                    this.lastTimePongReceived = DateTime.Now;
-                    break;
-            }
-        }
-
-        private async Task PingContinuouslyAsync()
-        {
-            try
-            {
-                await Task.Delay(1_000, this.cancellation.Token).ConfigureAwait(false);
-
-                while (!this.cancellation.IsCancellationRequested)
-                {
-                    this.logger.Debug("Sending ping");
-
-                    var latestTimeToAnswerPing = DateTime.Now + TimeSpan.FromSeconds(PingMaxAnswerDelaySeconds);
-                    await this.SendAsync(new PingPayload()).ConfigureAwait(false);
-
-                    Task delayTillNextSend = Task.Delay(PingIntervalSeconds * 1000, this.cancellation.Token);
-
-                    // Wait for pong and check it.
-                    await Task.Delay(TimeSpan.FromSeconds(PingMaxAnswerDelaySeconds), this.cancellation.Token).ConfigureAwait(false);
-
-                    bool good = this.lastTimePongReceived < latestTimeToAnswerPing;
-
-
-                    if (!good)
-                    {
-                        this.logger.Warn("Ping message was ignored for {0} seconds! Disconnecting.", PingMaxAnswerDelaySeconds);
-
-                        Task.Run(() => this.Dispose());
-                        return;
-                    }
-
-                    await delayTillNextSend.ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
+            await this.SendAsync(new CommandNotRecognizedPayload()).ConfigureAwait(false);
         }
 
         public virtual void Dispose()
@@ -145,7 +88,6 @@ namespace WatchTool.Common.P2P
 
             this.cancellation.Cancel();
 
-            this.pingingTask.GetAwaiter().GetResult();
             this.consumeMessagesTask.GetAwaiter().GetResult();
 
             this.cancellation.Dispose();

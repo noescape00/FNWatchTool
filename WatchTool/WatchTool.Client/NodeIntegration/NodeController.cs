@@ -7,7 +7,7 @@ using WatchTool.Common.P2P.Payloads;
 
 namespace WatchTool.Client.NodeIntegration
 {
-    public class NodeController : IDisposable
+    public class NodeController
     {
         private readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -15,50 +15,44 @@ namespace WatchTool.Client.NodeIntegration
 
         private readonly APIIntegration api;
 
-        private Task nodeUpdatingTask;
-
-        private bool NodeLaunched = false;
-
-        private Task nodeStatusUpdateTask;
-
-        private CancellationTokenSource cancellation;
-
-        private string lastConsoleOutput;
-
-
         public NodeController(ClientConfiguration config)
         {
             this.git = new GitIntegration(config);
             this.api = new APIIntegration(config);
-            this.lastConsoleOutput = null;
-
-            this.nodeUpdatingTask = Task.CompletedTask;
         }
 
-        /// <summary>Clones or updates the node in the background.</summary>
-        public void StartUpdatingOrCloningTheNode(Func<Task> onNodeUpdated)
+        private async Task<NodeRunningResul> IsNodeLaunchedAsync(CancellationToken token)
         {
             this.logger.Trace("()");
 
-            if (this.nodeUpdatingTask != Task.CompletedTask)
+            try
             {
-                this.logger.Debug("Node update is in process.");
-                this.logger.Trace("(-)[ALREADY_IN_PROCESS]");
-                return;
+                string result = await this.api.GetConsoleOutput(token).ConfigureAwait(false);
+
+                bool nodeRunning = !string.IsNullOrEmpty(result);
+
+                this.logger.Trace("(-):{0}", nodeRunning);
+                return new NodeRunningResul() {IsNodeRunning = nodeRunning, LastLog = result};
+            }
+            catch (Exception)
+            {
             }
 
-            if (this.NodeLaunched)
-            {
-                this.logger.Trace("(-)[NODE_IS_RUNNING]");
-                return;
-            }
+            this.logger.Trace("(-)[EX]:false");
+            return new NodeRunningResul() {IsNodeRunning = false};
+        }
 
-            this.nodeUpdatingTask = this.git.UpdateAndBuildRepositoryAsync(onNodeUpdated);
+        /// <summary>Clones or updates the node in the background.</summary>
+        public async Task UpdateOrCloneTheNodeAsync()
+        {
+            this.logger.Trace("()");
+
+            await this.git.UpdateAndBuildRepositoryAsync().ConfigureAwait(false);
 
             this.logger.Trace("(-)");
         }
 
-        public NodeInfoPayload GetNodeInfo()
+        public async Task<NodeInfoPayload> GetNodeInfo(CancellationToken token)
         {
             this.logger.Trace("()");
 
@@ -71,12 +65,14 @@ namespace WatchTool.Client.NodeIntegration
 
             info.NodeRepoInfo = git.GetRepoInfo();
 
-            info.IsNodeRunning = this.NodeLaunched;
+            NodeRunningResul runningResult = await this.IsNodeLaunchedAsync(token).ConfigureAwait(false);
+
+            info.IsNodeRunning = runningResult.IsNodeRunning;
 
             // Parse consensus height
-            if (lastConsoleOutput != null)
+            if (info.IsNodeRunning)
             {
-                string data = lastConsoleOutput;
+                string data = runningResult.LastLog;
 
                 string key = "Consensus.Height:    ";
                 int keyIndex = data.IndexOf(key);
@@ -89,7 +85,7 @@ namespace WatchTool.Client.NodeIntegration
 
                     info.RunningNodeInfo = new RunningNodeInfo()
                     {
-                        LastConsoleOutput = lastConsoleOutput,
+                        LastConsoleOutput = runningResult.LastLog,
                         ConsensusHeight = consensusHeight
                     };
                 }
@@ -99,17 +95,17 @@ namespace WatchTool.Client.NodeIntegration
             return info;
         }
 
-        public void RunNode()
+        public async Task RunNodeAsync(CancellationToken token)
         {
             this.logger.Trace("()");
 
-            if (this.NodeLaunched)
+            NodeRunningResul runningResult = await this.IsNodeLaunchedAsync(token).ConfigureAwait(false);
+
+            if (runningResult.IsNodeRunning)
             {
                 this.logger.Trace("(-)[ALREADY_LAUNCHED]");
                 return;
             }
-
-            this.NodeLaunched = true;
 
             this.logger.Info("Running the node.");
 
@@ -128,9 +124,6 @@ namespace WatchTool.Client.NodeIntegration
                 startInfo.UseShellExecute = true;
                 process.StartInfo = startInfo;
                 process.Start();
-
-                this.cancellation = new CancellationTokenSource();
-                this.nodeStatusUpdateTask = this.UpdateNodeStatusContinuouslyAsync();
             }
             catch (Exception e)
             {
@@ -141,63 +134,29 @@ namespace WatchTool.Client.NodeIntegration
             this.logger.Trace("(-)");
         }
 
-        public async Task StopNodeAsync()
+        public async Task StopNodeAsync(CancellationToken token)
         {
             this.logger.Trace("()");
 
-            if (!this.NodeLaunched)
+            NodeRunningResul runningResult = await this.IsNodeLaunchedAsync(token).ConfigureAwait(false);
+
+            if (!runningResult.IsNodeRunning)
             {
-                this.logger.Trace("(-)[NOT_LAUNCHED]");
+                this.logger.Trace("(-)[NODE_NOT_RUNNING]");
                 return;
             }
 
-            this.NodeLaunched = false;
-            this.lastConsoleOutput = null;
-
             this.logger.Info("Stopping the node.");
 
-            this.cancellation.Cancel();
-            await this.nodeUpdatingTask.ConfigureAwait(false);
-
-            await this.api.StopNode().ConfigureAwait(false);
+            await this.api.StopNodeAsync(token).ConfigureAwait(false);
 
             this.logger.Trace("(-)");
         }
 
-        private async Task UpdateNodeStatusContinuouslyAsync()
+        private class NodeRunningResul
         {
-            this.logger.Trace("()");
-
-            try
-            {
-                while (!this.cancellation.IsCancellationRequested)
-                {
-                    try
-                    {
-                        this.lastConsoleOutput = await this.api.GetConsoleOutput(this.cancellation.Token).ConfigureAwait(false);
-                    }
-                    catch (Exception)
-                    {
-                    }
-
-                    await Task.Delay(5_000, this.cancellation.Token).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException e)
-            {
-            }
-
-            this.logger.Trace("(-)");
-        }
-
-
-        public void Dispose()
-        {
-            this.logger.Trace("()");
-
-            this.nodeStatusUpdateTask?.GetAwaiter().GetResult();
-
-            this.logger.Trace("(-)");
+            public bool IsNodeRunning;
+            public string LastLog;
         }
     }
 }
