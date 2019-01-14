@@ -24,20 +24,20 @@ namespace WatchTool.Server.P2P
 
         private readonly ServerConnectionManager connectionManager;
 
-        public ServerListener(PayloadProvider payloadProvider, ServerConnectionManager connectionManager)
+        public ServerListener(PayloadProvider payloadProvider, ServerConnectionManager connectionManager, ServerConfiguration config)
         {
             this.payloadProvider = payloadProvider;
             this.connectionManager = connectionManager;
             this.cancellation = new CancellationTokenSource();
 
-            this.tcpListener = new TcpListener(ServerConfiguration.ListenEndPoint);
+            this.tcpListener = new TcpListener(config.ListenEndPoint);
             this.tcpListener.Server.LingerState = new LingerOption(true, 0);
             this.tcpListener.Server.NoDelay = true;
             this.tcpListener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
 
             this.acceptTask = Task.CompletedTask;
 
-            this.logger.Debug("Server is ready to listen on '{0}'.", ServerConfiguration.ListenEndPoint);
+            this.logger.Debug("Server is ready to listen on '{0}'.", config.ListenEndPoint);
         }
 
         /// <summary>Starts listening on the server's endpoint.</summary>

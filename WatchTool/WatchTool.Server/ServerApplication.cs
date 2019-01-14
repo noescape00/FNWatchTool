@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
+using WatchTool.Common;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.PayloadsBase;
 using WatchTool.Server.P2P;
@@ -14,7 +15,7 @@ namespace WatchTool.Server
 
         protected IServiceProvider services;
 
-        public async Task StartAsync()
+        public async Task StartAsync(string[] args)
         {
             this.logger.Info("===SERVER application starting===");
 
@@ -22,6 +23,8 @@ namespace WatchTool.Server
             {
                 IServiceCollection servicesCollection = this.GetServicesCollection();
                 this.services = servicesCollection.BuildServiceProvider();
+
+                this.services.GetRequiredService<ServerConfiguration>().Initialize(new TextFileConfiguration(args));
 
                 this.services.GetRequiredService<PayloadProvider>().DiscoverPayloads();
                 this.services.GetRequiredService<ServerListener>().Initialize();
@@ -46,7 +49,8 @@ namespace WatchTool.Server
                 .AddSingleton<PayloadProvider>()
                 .AddSingleton<ServerConnectionManager>()
                 .AddSingleton(provider => provider.GetService<ServerConnectionManager>() as IPeersController)
-                .AddSingleton<DashboardHost>();
+                .AddSingleton<DashboardHost>()
+                .AddSingleton<ServerConfiguration>();
 
             this.logger.Trace("(-)");
             return collection;

@@ -1,11 +1,20 @@
 ﻿using System.Net;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using WatchTool.Common;
 
 namespace WatchTool.Server
 {
-    public static class ServerConfiguration
+    public class ServerConfiguration
     {
-        public const int ServerPort = 18989;
+        public void Initialize(TextFileConfiguration config)
+        {
+            this.ServerPort = config.GetOrDefault<int>("serverPort", 18989);
 
-        public static IPEndPoint ListenEndPoint = new IPEndPoint(IPAddress.Parse("::ffff:127.0.0.1"), ServerPort);
+            this.ListenEndPoint = new IPEndPoint(IPAddress.Parse("::ffff:127.0.0.1"), this.ServerPort);
+        }
+
+        public int ServerPort { get; private set; }
+
+        public IPEndPoint ListenEndPoint { get; private set; }
     }
 }

@@ -17,7 +17,7 @@ namespace WatchTool.Server
             Console.CancelKeyPress += this.ShutdownHandler;
 
             this.application = new ServerApplication();
-            await this.application.StartAsync();
+            await this.application.StartAsync(args);
 
             await Task.Delay(-1);
         }
