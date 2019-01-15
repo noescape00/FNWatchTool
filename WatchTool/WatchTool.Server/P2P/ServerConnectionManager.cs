@@ -39,6 +39,8 @@ namespace WatchTool.Server.P2P
 
         public async Task SendPayloadToPeerAsync(int peerId, Payload payload)
         {
+            this.logger.Trace("()");
+
             ServerPeer peer = null;
 
             lock (this.locker)
@@ -47,6 +49,8 @@ namespace WatchTool.Server.P2P
             }
 
             await peer.SendAsync(payload).ConfigureAwait(false);
+
+            this.logger.Trace("(-)");
         }
 
         public void OnPeerNodeInfoReceived(NodeInfoPayload nodeInfo, ServerPeer peer)

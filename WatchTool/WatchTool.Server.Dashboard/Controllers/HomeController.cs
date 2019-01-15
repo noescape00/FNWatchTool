@@ -61,18 +61,20 @@ namespace WatchTool.Server.Dashboard.Controllers
         [HttpPost]
         public async Task<IActionResult> Request_Update(int peerId)
         {
+            this.logger.Trace("()");
+
             try
             {
-                if (this.peersController != null)
-                    await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload()).ConfigureAwait(false);
+                await this.peersController.SendPayloadToPeerAsync(peerId, new GetLatestNodeRequestPayload()).ConfigureAwait(false);
 
                 var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
+                this.logger.Trace("(-)");
                 return View("~/Views/Partial/PeerRow.cshtml", data);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                this.logger.Debug("Exception occured: '{0}'", e.ToString());
                 throw;
             }
         }
@@ -80,23 +82,43 @@ namespace WatchTool.Server.Dashboard.Controllers
         [HttpPost]
         public async Task<IActionResult> Request_StartNode(int peerId)
         {
-            if (this.peersController != null)
+            this.logger.Trace("()");
+
+            try
+            {
                 await this.peersController.SendPayloadToPeerAsync(peerId, new StartNodeRequestPayload()).ConfigureAwait(false);
 
-            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+                var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
-            return View("~/Views/Partial/PeerRow.cshtml", data);
+                this.logger.Trace("(-)");
+                return View("~/Views/Partial/PeerRow.cshtml", data);
+            }
+            catch (Exception e)
+            {
+                this.logger.Debug("Exception occured: '{0}'", e.ToString());
+                throw;
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Request_StopNode(int peerId)
         {
-            if (this.peersController != null)
+            this.logger.Trace("()");
+
+            try
+            {
                 await this.peersController.SendPayloadToPeerAsync(peerId, new StopNodeRequestPayload()).ConfigureAwait(false);
 
-            var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
+                var data = await this.GetNextPeerUpdateAsync(peerId).ConfigureAwait(false);
 
-            return View("~/Views/Partial/PeerRow.cshtml", data);
+                this.logger.Trace("(-)");
+                return View("~/Views/Partial/PeerRow.cshtml", data);
+            }
+            catch (Exception e)
+            {
+                this.logger.Debug("Exception occured: '{0}'", e.ToString());
+                throw;
+            }
         }
 
         public async Task<PeerInfoModel> GetNextPeerUpdateAsync(int peerId)
