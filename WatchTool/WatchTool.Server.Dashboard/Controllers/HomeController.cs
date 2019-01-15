@@ -58,7 +58,6 @@ namespace WatchTool.Server.Dashboard.Controllers
             return View(infoModel);
         }
 
-        [HttpPost]
         public async Task<IActionResult> Request_Update(int peerId)
         {
             this.logger.Trace("()");
@@ -79,7 +78,6 @@ namespace WatchTool.Server.Dashboard.Controllers
             }
         }
 
-        [HttpPost]
         public async Task<IActionResult> Request_StartNode(int peerId)
         {
             this.logger.Trace("()");
@@ -100,7 +98,6 @@ namespace WatchTool.Server.Dashboard.Controllers
             }
         }
 
-        [HttpPost]
         public async Task<IActionResult> Request_StopNode(int peerId)
         {
             this.logger.Trace("()");
