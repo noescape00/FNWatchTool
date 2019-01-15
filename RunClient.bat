@@ -1,1 +1,1 @@
-dotnet exec WatchTool\WatchTool.Client\bin\Debug\netcoreapp2.1\WatchTool.Client.dll -serverIp=127.0.0.1
+dotnet exec WatchTool\WatchTool.Client\bin\Debug\netcoreapp2.1\WatchTool.Client.dll

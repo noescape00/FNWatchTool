@@ -46,7 +46,13 @@ namespace WatchTool.Server.P2P
 
             lock (this.locker)
             {
-                peer = this.peers[peerId];
+                peer = this.peers.SingleOrDefault(x => x.Connection.GetId() == peerId);
+
+                if (peer == null)
+                {
+                    this.logger.Warn("Peer doesn't exist.");
+                    return;
+                }
             }
 
             IPAddress addr = (peer.Connection.GetConnectionEndPoint() as IPEndPoint).Address;
