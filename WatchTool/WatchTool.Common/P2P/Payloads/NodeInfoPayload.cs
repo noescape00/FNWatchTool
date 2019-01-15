@@ -6,6 +6,8 @@ namespace WatchTool.Common.P2P.Payloads
     [Payload("info")]
     public class NodeInfoPayload : Payload
     {
+        public DateTime PayloadCreationUTCTime { get; set; }
+
         public bool IsNodeCloned { get; set; }
 
         /// <summary>Info about node's repo or <c>null</c> if <see cref="IsNodeCloned"/> is <c>false</c>.</summary>

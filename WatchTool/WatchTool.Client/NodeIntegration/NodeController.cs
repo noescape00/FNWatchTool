@@ -58,6 +58,8 @@ namespace WatchTool.Client.NodeIntegration
 
             var info = new NodeInfoPayload();
 
+            info.PayloadCreationUTCTime = DateTime.UtcNow;
+
             info.IsNodeCloned = this.git.IsNodeCloned();
 
             if (!info.IsNodeCloned)

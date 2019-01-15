@@ -170,7 +170,6 @@ namespace WatchTool.Client.NodeIntegration
             return repoInfo;
         }
 
-
         private void LogPsExecutionResult(PowerShell powershell)
         {
             StringBuilder builder = new StringBuilder();

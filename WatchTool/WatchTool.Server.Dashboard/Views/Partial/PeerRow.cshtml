@@ -1,5 +1,6 @@
 ﻿@using WatchTool.Common.Models
 @using WatchTool.Common.P2P.Payloads
+@using System.Net;
 @model WatchTool.Common.Models.PeerInfoModel
 
 @{
@@ -7,96 +8,102 @@
 }
 
 @{
-    PeerInfoModel peer = Model;
-    string nodeVersion = "N/A";
+PeerInfoModel peer = Model;
+string nodeVersion = "N/A";
 
-    if (peer.LatestInfoPayload.IsNodeCloned)
+if (peer.LatestInfoPayload.IsNodeCloned)
+{
+    NodeRepositoryVersionInfo repoInfo = peer.LatestInfoPayload.NodeRepoInfo;
+
+    string hashShort = repoInfo.LatestCommitHash.Substring(0, 7);
+
+    int daysOld = (int)(DateTime.Now - repoInfo.LatestCommitDate).TotalDays;
+
+    nodeVersion = $"{hashShort} : {repoInfo.LatestCommitDate.ToShortDateString()} ({daysOld} days old)";
+}
+
+string runningInfo = "-";
+RunningNodeInfo runningInfoModel = peer.LatestInfoPayload.RunningNodeInfo;
+
+if (runningInfoModel != null)
+{
+    runningInfo = $"height: {runningInfoModel.ConsensusHeight}";
+}
+
+bool runActionEnabled = !peer.LatestInfoPayload.IsNodeRunning && peer.LatestInfoPayload.IsNodeCloned;
+bool stopActionEnabled = peer.LatestInfoPayload.IsNodeRunning;
+
+double lastUpdatedMinutes = Math.Round((DateTime.UtcNow - peer.LatestInfoPayload.PayloadCreationUTCTime).TotalMinutes, 2);
+
+string lastUpdatedString = lastUpdatedMinutes + " minutes ago";
+
+string ip = (peer.EndPoint as IPEndPoint).Address.ToString();
+
+<td>@ip</td>
+<td>@lastUpdatedString</td>
+<td>@nodeVersion</td>
+<td>
+    @if (peer.LatestInfoPayload.IsNodeRunning)
     {
-        NodeRepositoryVersionInfo repoInfo = peer.LatestInfoPayload.NodeRepoInfo;
-
-        string hashShort = repoInfo.LatestCommitHash.Substring(0, 7);
-
-        int daysOld = (int)(DateTime.Now - repoInfo.LatestCommitDate).TotalDays;
-
-        nodeVersion = $"{hashShort} : {repoInfo.LatestCommitDate.ToShortDateString()} ({daysOld} days old)";
+        <span class="badge badge-pill badge-success">Y</span>
     }
-
-    string runningInfo = "-";
-    RunningNodeInfo runningInfoModel = peer.LatestInfoPayload.RunningNodeInfo;
-
-    if (runningInfoModel != null)
+    else
     {
-        runningInfo = $"height: {runningInfoModel.ConsensusHeight}";
+        <span class="badge badge-pill badge-danger">N</span>
     }
+</td>
+<td>
+    @runningInfo
 
-    bool runActionEnabled = !peer.LatestInfoPayload.IsNodeRunning && peer.LatestInfoPayload.IsNodeCloned;
-    bool stopActionEnabled = peer.LatestInfoPayload.IsNodeRunning;
+    @if (runningInfoModel != null && runningInfoModel.LastConsoleOutput != null)
+    {
+        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal">log</button>
 
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Latest log from the node</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body codeblock">
+                        @{
+                            string[] data = runningInfoModel.LastConsoleOutput.Split(Environment.NewLine);
 
-    <td>@peer.EndPoint</td>
-    <td>@nodeVersion</td>
-    <td>
-        @if (peer.LatestInfoPayload.IsNodeRunning)
-        {
-            <span class="badge badge-pill badge-success">Y</span>
-        }
-        else
-        {
-            <span class="badge badge-pill badge-danger">N</span>
-        }
-    </td>
-    <td>
-        @runningInfo
-
-        @if (runningInfoModel != null && runningInfoModel.LastConsoleOutput != null)
-        {
-            <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal">log</button>
-
-            <!-- Modal -->
-            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Latest log from the node</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body codeblock">
-                            @{
-                                string[] data = runningInfoModel.LastConsoleOutput.Split(Environment.NewLine);
-
-                                foreach (string dataString in data)
-                                {
-                                    @dataString
-                                    <br />
-                                }
+                            foreach (string dataString in data)
+                            {
+                                @dataString
+                                <br />
                             }
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
-        }
-    </td>
+        </div>
+    }
+</td>
 
 
-    string actionsId = "actions" + peer.Id;
+string actionsId = "actions" + peer.Id;
 
-    <td id="@actionsId">
+<td id="@actionsId">
 
-        @if (!stopActionEnabled)
-        {
-            <button type="button" class="btn btn-secondary btn-sm" onclick="callUpdateNode(@peer.Id)">Update</button>
-        }
+    @if (!stopActionEnabled)
+    {
+        <button type="button" class="btn btn-secondary btn-sm" onclick="callUpdateNode(@peer.Id)">Update</button>
+    }
 
-        @if (runActionEnabled)
-        {
-            <button type="button" class="btn btn-success btn-sm" onclick="callStartNode(@peer.Id)">Start node</button>
-        }
+    @if (runActionEnabled)
+    {
+        <button type="button" class="btn btn-success btn-sm" onclick="callStartNode(@peer.Id)">Start node</button>
+    }
 
-        @if (stopActionEnabled)
-        {
-            <button type="button" class="btn btn-danger btn-sm" onclick="callStopNode(@peer.Id)">Stop node</button>
-        }
-    </td>
+    @if (stopActionEnabled)
+    {
+        <button type="button" class="btn btn-danger btn-sm" onclick="callStopNode(@peer.Id)">Stop node</button>
+    }
+</td>
 }

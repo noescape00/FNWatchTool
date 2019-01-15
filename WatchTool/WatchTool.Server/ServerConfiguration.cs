@@ -10,7 +10,7 @@ namespace WatchTool.Server
         {
             this.ServerPort = config.GetOrDefault<int>("serverPort", 18989);
 
-            this.ListenEndPoint = new IPEndPoint(IPAddress.Parse("::ffff:127.0.0.1"), this.ServerPort);
+            this.ListenEndPoint = new IPEndPoint(IPAddress.Parse("::ffff:0.0.0.0"), this.ServerPort);
         }
 
         public int ServerPort { get; private set; }
