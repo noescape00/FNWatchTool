@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
@@ -62,7 +63,8 @@ namespace WatchTool.Common.P2P
                         return;
                     }
 
-                    this.logger.Info("Payload received: " + payload.GetType().Name);
+                    IPAddress addr = (this.Connection.GetConnectionEndPoint() as IPEndPoint).Address;
+                    this.logger.Info("Payload received '{0}' from {1}", payload.GetType().Name, addr);
 
                     try
                     {
