@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using NLog;
 using WatchTool.Common;
 using WatchTool.Common.Models;
 using WatchTool.Common.P2P.Payloads;
@@ -19,17 +16,19 @@ namespace WatchTool.Server.Dashboard.Controllers
 
         private readonly AsyncQueue<PeerInfoModel> peerUpdatedQueue;
 
-        public HomeController(IPeersController peersController = null) // TODO
+        private readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        public HomeController(IPeersController peersController)
         {
             this.peersController = peersController;
             this.peerUpdatedQueue = new AsyncQueue<PeerInfoModel>();
 
-            this.peersController?.AddListener(this); // TODO remove '?'
+            this.peersController.AddListener(this);
         }
 
         public void OnPeerUpdated(PeerInfoModel model)
         {
-            this.peerUpdatedQueue.Enqueue(model); // how to consume this best? TODO. queue per request here so maybe dequeue till we have what we want
+            this.peerUpdatedQueue.Enqueue(model);
         }
 
         //// TODO remove
@@ -55,11 +54,6 @@ namespace WatchTool.Server.Dashboard.Controllers
         public IActionResult Index()
         {
             PeersInformationModel infoModel = this.peersController.GetPeersInfo();
-
-            if (infoModel.PeersInfo.Any(x => x == null))
-            {
-
-            }
 
             return View(infoModel);
         }
@@ -133,7 +127,7 @@ namespace WatchTool.Server.Dashboard.Controllers
 
         protected override void Dispose(bool disposing)
         {
-            this.peersController?.RemoveListener(this); // TODO remove ?
+            this.peersController.RemoveListener(this);
 
             base.Dispose(disposing);
         }

@@ -8,7 +8,7 @@ namespace WatchTool.Client
     {
         public void Initialize(TextFileConfiguration config)
         {
-            this.ServerIP = config.GetOrDefault<string>("serverIp", "127.0.0.1");
+            this.ServerIP = config.GetOrDefault<string>("serverIp", "52.178.220.228"); //127.0.0.1   52.178.220.228
 
             this.ServerPort = config.GetOrDefault<int>("serverPort", 18989);
 
