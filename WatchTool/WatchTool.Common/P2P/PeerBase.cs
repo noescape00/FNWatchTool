@@ -62,6 +62,8 @@ namespace WatchTool.Common.P2P
                         return;
                     }
 
+                    this.logger.Info("Payload received: " + payload.GetType().Name);
+
                     try
                     {
                         await this.OnPayloadReceivedAsync(payload, this.cancellation.Token).ConfigureAwait(false);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
@@ -47,6 +48,10 @@ namespace WatchTool.Server.P2P
             {
                 peer = this.peers[peerId];
             }
+
+            IPAddress addr = (peer.Connection.GetConnectionEndPoint() as IPEndPoint).Address;
+
+            this.logger.Info("Sending payload '{0}' to peer with ip {1}", payload.GetType().Name, addr);
 
             await peer.SendAsync(payload).ConfigureAwait(false);
 
