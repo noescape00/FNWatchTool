@@ -76,13 +76,14 @@ namespace WatchTool.Client.NodeIntegration
             {
                 string data = runningResult.LastLog;
 
-                string key = "Consensus.Height:    ";
+                string key = "Consensus.Height:";
                 int keyIndex = data.IndexOf(key);
 
                 if (keyIndex != -1)
                 {
                     string consensusHeightString = data.Substring(keyIndex + key.Length);
-                    consensusHeightString = consensusHeightString.Substring(0, consensusHeightString.IndexOf("   Consensus.Hash"));
+                    consensusHeightString = consensusHeightString.Substring(0, consensusHeightString.IndexOf("Consensus.Hash"));
+                    consensusHeightString = consensusHeightString.Replace(" ", "");
                     int consensusHeight = int.Parse(consensusHeightString);
 
                     info.RunningNodeInfo = new RunningNodeInfo()
