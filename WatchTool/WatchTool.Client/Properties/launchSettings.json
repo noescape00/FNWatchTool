@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WatchTool.Client": {
+      "commandName": "Project",
+      "commandLineArgs": "-serverIp=127.0.0.1"
+    }
+  }
+}
