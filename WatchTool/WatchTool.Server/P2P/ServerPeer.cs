@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using WatchTool.Common;
 using WatchTool.Common.P2P;
 using WatchTool.Common.P2P.Payloads;
 using WatchTool.Common.P2P.PayloadsBase;
@@ -14,13 +15,16 @@ namespace WatchTool.Server.P2P
 
         private readonly Task askForNodeInfoTask;
 
-        /// <summary>How often do we request update from a node.</summary>
-        private const int RefreshIntervalSeconds = 30; // TODO make part of the config
+        private readonly AsyncManualResetEvent resetEvent;
+
+        /// <summary>Delay between requests for an update from a node.</summary>
+        private const int RefreshIntervalSeconds = 20; // TODO make part of the config
 
         public ServerPeer(NetworkConnection connection, ServerConnectionManager connectionManager, Action<PeerBase> onDisconnectedAndDisposed) : base(connection, onDisconnectedAndDisposed)
         {
             this.connectionManager = connectionManager;
 
+            this.resetEvent = new AsyncManualResetEvent(true);
             this.askForNodeInfoTask = AskForInfoContinuously();
         }
 
@@ -29,6 +33,7 @@ namespace WatchTool.Server.P2P
             switch (payload)
             {
                 case NodeInfoPayload nodeInfo:
+                    this.resetEvent.Set();
                     this.connectionManager.OnPeerNodeInfoReceived(nodeInfo, this);
                     break;
             }
@@ -40,7 +45,10 @@ namespace WatchTool.Server.P2P
             {
                 while (!this.cancellation.IsCancellationRequested)
                 {
+                    this.resetEvent.Reset();
                     await this.SendAsync(new GetInfoRequestPayload()).ConfigureAwait(false);
+
+                    await this.resetEvent.WaitAsync(this.cancellation.Token).ConfigureAwait(false);
 
                     await Task.Delay(RefreshIntervalSeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
                 }
