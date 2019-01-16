@@ -55,10 +55,6 @@ namespace WatchTool.Server.P2P
                 }
             }
 
-            IPAddress addr = (peer.Connection.GetConnectionEndPoint() as IPEndPoint).Address;
-
-            this.logger.Info("Sending payload '{0}' to peer with ip {1}", payload.GetType().Name, addr);
-
             await peer.SendAsync(payload).ConfigureAwait(false);
 
             this.logger.Trace("(-)");

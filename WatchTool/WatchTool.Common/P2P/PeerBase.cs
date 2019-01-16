@@ -33,6 +33,12 @@ namespace WatchTool.Common.P2P
 
         public async Task SendAsync(Payload payload)
         {
+            this.logger.Trace("()");
+
+            IPAddress addr = (this.Connection.GetConnectionEndPoint() as IPEndPoint).Address;
+
+            this.logger.Info("Sending payload '{0}' to peer with ip {1}", payload.GetType().Name, addr);
+
             try
             {
                 await this.Connection.SendAsync(payload).ConfigureAwait(false);
@@ -42,7 +48,11 @@ namespace WatchTool.Common.P2P
                 this.logger.Trace("Failed to send a message. Exception: '{0}'.", e.ToString());
 
                 Task.Run(() => this.Dispose());
+                this.logger.Trace("(-)[ERROR]");
+                return;
             }
+
+            this.logger.Trace("(-)");
         }
 
         private async Task ConsumeMessagesContinouslyAsync()
