@@ -24,8 +24,11 @@ namespace WatchTool.Server.P2P
 
         private readonly ServerConnectionManager connectionManager;
 
+        private readonly ServerConfiguration configuration;
+
         public ServerListener(PayloadProvider payloadProvider, ServerConnectionManager connectionManager, ServerConfiguration config)
         {
+            this.configuration = config;
             this.payloadProvider = payloadProvider;
             this.connectionManager = connectionManager;
             this.cancellation = new CancellationTokenSource();
@@ -84,7 +87,7 @@ namespace WatchTool.Server.P2P
 
                     this.logger.Info("Connection established with {0}.", tcpClient.Client.RemoteEndPoint);
                     NetworkConnection connection = new NetworkConnection(tcpClient, payloadProvider);
-                    ServerPeer peer = new ServerPeer(connection, this.connectionManager, failedPeer =>
+                    ServerPeer peer = new ServerPeer(connection, this.connectionManager,  this.configuration,failedPeer =>
                     {
                         this.connectionManager.RemovePeer(failedPeer as ServerPeer);
                     });

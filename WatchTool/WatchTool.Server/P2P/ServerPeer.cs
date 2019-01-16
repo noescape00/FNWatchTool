@@ -15,14 +15,14 @@ namespace WatchTool.Server.P2P
 
         private readonly Task askForNodeInfoTask;
 
+        private readonly ServerConfiguration configuration;
+
         private readonly AsyncManualResetEvent resetEvent;
 
-        /// <summary>Delay between requests for an update from a node.</summary>
-        private const int RefreshIntervalSeconds = 20; // TODO make part of the config
-
-        public ServerPeer(NetworkConnection connection, ServerConnectionManager connectionManager, Action<PeerBase> onDisconnectedAndDisposed) : base(connection, onDisconnectedAndDisposed)
+        public ServerPeer(NetworkConnection connection, ServerConnectionManager connectionManager, ServerConfiguration configuration, Action<PeerBase> onDisconnectedAndDisposed) : base(connection, onDisconnectedAndDisposed)
         {
             this.connectionManager = connectionManager;
+            this.configuration = configuration;
 
             this.resetEvent = new AsyncManualResetEvent(true);
             this.askForNodeInfoTask = AskForInfoContinuously();
@@ -50,7 +50,7 @@ namespace WatchTool.Server.P2P
 
                     await this.resetEvent.WaitAsync(this.cancellation.Token).ConfigureAwait(false);
 
-                    await Task.Delay(RefreshIntervalSeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
+                    await Task.Delay(this.configuration.RefreshIntervalSeconds * 1_000, this.cancellation.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
