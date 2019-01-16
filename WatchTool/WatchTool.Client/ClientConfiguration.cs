@@ -39,6 +39,6 @@ namespace WatchTool.Client
         /// <summary>Where do we clone FN repository from.</summary>
         public string RepoPath { get; private set; }
 
-        public int ConnectToServerRetryDelaySeconds = 5; // TODO change to 20-30
+        public int ConnectToServerRetryDelaySeconds { get; private set; } = 10;
     }
 }

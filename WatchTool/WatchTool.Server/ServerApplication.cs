@@ -63,6 +63,7 @@ namespace WatchTool.Server
 
             this.services.GetRequiredService<ServerListener>()?.Dispose();
             this.services.GetRequiredService<ServerConnectionManager>()?.Dispose();
+            this.services.GetRequiredService<DashboardHost>()?.Dispose();
 
             this.logger.Info("Shutdown completed.");
             this.logger.Trace("(-)");

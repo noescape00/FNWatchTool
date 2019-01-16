@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace WatchTool.Server
 {
-    public class DashboardHost
+    public class DashboardHost : IDisposable
     {
         private IWebHost webHost;
 
@@ -14,6 +14,9 @@ namespace WatchTool.Server
             this.webHost = Dashboard.Program.CreateWebHost(services, serviceProvider, new WebHostBuilder());
         }
 
-        // TODO dispose
+        public void Dispose()
+        {
+            this.webHost.Dispose();
+        }
     }
 }

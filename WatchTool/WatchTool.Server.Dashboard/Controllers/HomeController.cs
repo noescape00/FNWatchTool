@@ -31,26 +31,6 @@ namespace WatchTool.Server.Dashboard.Controllers
             this.peerUpdatedQueue.Enqueue(model);
         }
 
-        //// TODO remove
-        //public IActionResult Index()
-        //{
-        //    var m = new PeersInformationModel() {PeersInfo = new List<PeerInfoModel>()};
-        //
-        //    m.PeersInfo.Add(new PeerInfoModel()
-        //    {
-        //        EndPoint = new IPEndPoint(1,1),
-        //        Id = 13,
-        //        LatestInfoPayload = new NodeInfoPayload()
-        //        {
-        //            IsNodeCloned = false,
-        //            IsNodeRunning = false
-        //        }
-        //    });
-        //
-        //
-        //    return View(m);
-        //}
-
         public IActionResult Index()
         {
             PeersInformationModel infoModel = this.peersController.GetPeersInfo();

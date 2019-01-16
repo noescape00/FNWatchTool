@@ -69,7 +69,6 @@ namespace WatchTool.Server.Dashboard
                 })
                 .UseStartup<Startup>()
                 .UseUrls("http://localhost:5000", "http://*:80")
-                //.UseUrls(apiUri.ToString()) // TODO
                 .Build();
 
             host.Start();
