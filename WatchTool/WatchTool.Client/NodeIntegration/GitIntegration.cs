@@ -23,43 +23,70 @@ namespace WatchTool.Client.NodeIntegration
 
         public bool WorkFolderExists()
         {
-            return Directory.Exists(this.config.WorkFolder);
+            this.logger.Trace("()");
+
+            bool exists = Directory.Exists(this.config.WorkFolder);
+
+            this.logger.Trace("(-):{0}", exists);
+            return exists;
         }
 
         public string GetRepoPath()
         {
+            this.logger.Trace("()");
+
             if (!this.WorkFolderExists())
+            {
+                this.logger.Trace("(-)[NO_WORK_FOLDER]:null");
                 return null;
+            }
 
             foreach (string directory in Directory.EnumerateDirectories(this.config.WorkFolder, ".git", SearchOption.AllDirectories))
             {
-                return Path.GetDirectoryName(directory);
+                string dirName = Path.GetDirectoryName(directory);
+
+                this.logger.Trace("(-):'{0}'", dirName);
+                return dirName;
             }
 
+            this.logger.Trace("(-)[GIT_NOT_FOUND]:null");
             return null;
         }
 
         public string GetSolutionPath()
         {
+            this.logger.Trace("()");
+
             if (!this.WorkFolderExists())
+            {
+                this.logger.Trace("(-)[NO_WORK_FOLDER]:null");
                 return null;
+            }
 
             var repoPath = this.GetRepoPath();
 
             if (repoPath == null)
+            {
+                this.logger.Trace("(-)[NO_REPO_PATH]:null");
                 return null;
+            }
 
             foreach (string directory in Directory.EnumerateFiles(repoPath, "*.sln", SearchOption.AllDirectories))
             {
-                return Path.GetDirectoryName(directory);
+                var dirName = Path.GetDirectoryName(directory);
+
+                this.logger.Trace("(-):'{0}'", dirName);
+                return dirName;
             }
 
+            this.logger.Trace("(-)[NOT_FOUND]:null");
             return null;
         }
 
         public bool IsNodeCloned()
         {
             bool nodeCloned = this.GetSolutionPath() != null;
+
             return nodeCloned;
         }
 
@@ -69,6 +96,7 @@ namespace WatchTool.Client.NodeIntegration
 
             if (!this.WorkFolderExists() || this.GetRepoPath() == null)
             {
+                this.logger.Info("Cloning the repository to '{0}'.", this.config.WorkFolder);
                 // Clone
                 Directory.CreateDirectory(this.config.WorkFolder);
 
@@ -84,24 +112,33 @@ namespace WatchTool.Client.NodeIntegration
 
                     this.LogPsExecutionResult(ps);
                 }
+
+                this.logger.Info("Finished cloning FN repository.");
             }
-
-            // Update
-            string repoPath = this.GetRepoPath();
-
-            using (PowerShell ps = PowerShell.Create())
+            else
             {
-                ps.AddScript($@"cd {repoPath}");
+                this.logger.Info("Updating repository.");
 
-                ps.AddScript($@"git checkout master");
-                ps.AddScript($@"git pull");
+                // Update
+                string repoPath = this.GetRepoPath();
 
-                ps.Invoke();
+                using (PowerShell ps = PowerShell.Create())
+                {
+                    ps.AddScript($@"cd {repoPath}");
 
-                this.LogPsExecutionResult(ps);
+                    ps.AddScript($@"git checkout master");
+                    ps.AddScript($@"git pull");
+
+                    ps.Invoke();
+
+                    this.LogPsExecutionResult(ps);
+                }
+
+                this.logger.Info("Finished updating FN repository.");
             }
 
-            this.logger.Info("Finished cloning or updating FN repository.");
+
+            this.logger.Info("Building solution.");
 
             // Build
             string solutionPath = this.GetSolutionPath();

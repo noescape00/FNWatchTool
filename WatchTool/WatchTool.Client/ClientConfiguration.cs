@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using WatchTool.Common;
 
@@ -19,7 +20,7 @@ namespace WatchTool.Client
             this.WorkFolder = config.GetOrDefault<string>("workFolder", null);
 
             if (this.WorkFolder == null)
-                this.WorkFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\WatchTool_StratisFNRepo";
+                this.WorkFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WatchTool_StratisFNRepo");
 
             this.RepoPath = config.GetOrDefault<string>("repoPath", "https://github.com/stratisproject/StratisBitcoinFullNode.git");
         }
