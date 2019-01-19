@@ -62,10 +62,8 @@ namespace WatchTool.Client.NodeIntegration
 
             info.IsNodeCloned = this.git.IsNodeCloned();
 
-            if (!info.IsNodeCloned)
-                return info;
-
-            info.NodeRepoInfo = git.GetRepoInfo();
+            if (info.IsNodeCloned)
+                info.NodeRepoInfo = git.GetRepoInfo();
 
             NodeRunningResul runningResult = await this.IsNodeLaunchedAsync(token).ConfigureAwait(false);
 
